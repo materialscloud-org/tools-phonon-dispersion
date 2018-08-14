@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Interactive Phonon Dispersion</title>
+    <link rel="stylesheet" type="text/css" href="../../user_static/css/jquery-ui.1.12.1.min.css"/>
+    <link href="../../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="../../user_static/css/mcloud_theme.css"/>
+    <link rel="stylesheet" type="text/css" href="../../user_static/css/visualizer.css"/>
+
+    <script src="../../static/js/jquery-3.1.0.min.js"></script>
+    <script src="../../static/js/bootstrap.min.js"></script>
+    <script src="../../user_static/js/three.min.js"></script>
+    <script src="../../user_static/js/highcharts.min.js"></script>
+    <script src="../../user_static/js/CCapture.js"></script>
+    <script src="../../user_static/js/gif.js"></script>
+
+    <script src="../../user_static/js/complex.min.js"></script>
+    <script src="../../user_static/js/js-yaml.min.js"></script>
+    <script src="../../user_static/js/Detector.js"></script>
+    <script src="../../user_static/js/export.js"></script>
+    <script src="../../user_static/js/phononwebsite.js"></script>
+    <script src="../../user_static/js/main.js"></script>
+
+    <script src="../../static/js/iframeResizer.contentWindow.min.js"></script>
+
+</head>
+<body>
+
+<div class="material-name"><h1 id="name">Material</h1></div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-sm-3">
+            <div class="shadow-box">
+                <div class="metadata-container">
+                    <h3>Settings</h3>
+                    <div id="options-list" class="phonon-properties">
+
+                        <div class="property-section">
+                            <h4>Repetitions:</h4>
+                            <form>
+                                <input id="nx" value="3" type="number" name="quantity" class="property-input" min="1">
+                                <input id="ny" value="3" type="number" name="quantity" class="property-input" min="1">
+                                <input id="nz" value="3" type="number" name="quantity" class="property-input" min="1">
+                                <button id="update" type="button">update</button>
+                            </form>
+                        </div>
+
+                        <div class="property-section">
+                            <h4 class="inline-header">Camera:</h4>
+                            <button id="camerax" type="button">x</button>
+                            <button id="cameray" type="button">y</button>
+                            <button id="cameraz" type="button">z</button>
+                        </div>
+
+                        <div class="property-section">
+                            <h4 class="inline-header">Cell:</h4>
+                            <input id="drawcell" type="checkbox" style="margin-right: 4px;">on</input>
+                        </div>
+
+                        <!--
+                        <div class="property-section">
+                            <h4 class="inline-header">Export movie:</h4>
+                            <button id="gifbutton"  type="button">gif</button>
+                            <button id="webmbutton" type="button">webm</button>
+                            <div id="progress"></div>
+                        </div>
+                        -->
+
+                        <div class="property-section">
+                            <h4>Amplitude:</h4>
+                            <form>
+                                <input id="amplitude_range" type="range" style="width: 60%; margin-right: 5px;  display: inline-block">
+                                <input id="amplitude_box"   type="number" style="width: 30%;">
+                            </form>
+                        </div>
+
+                        <div class="property-section">
+                            <h4>Vectors:</h4>
+                            <input id="vectors_amplitude_range" type="range" style="width: 60%; margin-right: 5px; display: inline-block">
+                            <input id="drawvectors" type="checkbox" style="margin-right: 4px;">on</input>
+                        </div>
+
+
+                        <div class="property-section">
+                            <h4>Speed:</h4>
+                            <input id="speed_range" type="range" style="width: 60%; margin-right: 5px; display: inline-block">
+                            <button id="playpause" type="button">pause</button>
+                        </div>
+
+                        <!--
+                        <div class="property-section">
+                            <h4>Export displacement:</h4>
+                            Phase (°):
+                            <input  id="phase" type="number" value="0.0" min="0.0" max="360.0" step ="45">
+                            <button id="xsf"    type="button">xsf</button>
+                            <button id="poscar" type="button">poscar</button>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-4">
+            <div class="shadow-box">
+                <div class="vis-container">
+                    <div class="phonon-crystal" id="vibcrystal"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5 col-sm-5">
+            <div class="shadow-box">
+                <div class="vis-container">
+                    <div class="phonon-highchart" id="vibhighcharts"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-sm-6">
+            <div class="shadow-box">
+                <div class="metadata-container">
+                    <h3>Lattice parameters (Ångström):</h3>
+                    <div>
+                        <table id="lattice" class="table attribute-table numbers-font-family">
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <div class="shadow-box">
+                <div class="metadata-container">
+                    <h3>Atomic positions (reduced):</h3>
+                    <div>
+                        <table id="atompos" class="table attribute-table numbers-font-family">
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style ="position: relative" data-iframe-height></div>
+</body>
+</html>

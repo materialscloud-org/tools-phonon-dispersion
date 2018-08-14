@@ -1,0 +1,26 @@
+window_title: "Interactive Phonon Dispersion"
+page_title: "Interactive Phonon Dispersion"
+
+#custom_css_files:
+# input_data:
+#    - custom.css
+#  process_data:
+#    - custom.css
+
+#custom_js_files:
+#  input_data:
+#  process_data:
+#    - custom.js
+
+about_section_title: "About Interactive Phonon Dispersion"
+
+templates:
+  how_to_cite: "how_to_cite.html"
+  about: "custom_about.html"
+  select_content: "visualizer_select_structure.html"
+
+use_upload_structure_block: True
+
+additional_accordion_entries:
+  - header: "Acknowledgements"
+    template_page: ack.html
