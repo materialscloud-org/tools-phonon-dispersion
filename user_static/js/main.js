@@ -1,4 +1,4 @@
-$( document ).ready(function() {
+function phononVisualizer(structure) {
 
     //visualizer
     v = new phononwebsite.VibCrystal($('#vibcrystal'));
@@ -23,7 +23,7 @@ $( document ).ready(function() {
 
     //p.updateMenu();
     //p.loadLocalJSON(phononData);
-    p.getUrlVars({json: "../../user_static/js/C2.json", name:"C2"});
+    p.getUrlVars({json: "../../user_static/data/" + structure + ".json", name: "Phonon dispersion: "+structure});
 
     //set dom objects vibcrystal
     v.setCameraDirectionButton($('#camerax'),'x');
@@ -43,4 +43,4 @@ $( document ).ready(function() {
     if ( ! Detector.webgl ) {
         Detector.addGetWebGLMessage();
     }
-});
+}

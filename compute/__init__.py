@@ -31,7 +31,8 @@ def process_structure():
 def process_structure_example():
     if flask.request.method == 'POST':
         examplestructure = flask.request.form.get('examplestructure', '<none>')
-        return "This was a POST " + examplestructure
+        return flask.render_template("user_templates/visualizer.html", structure=examplestructure)
+        #return "This was a POST " + examplestructure
     else:
-        return flask.render_template("user_templates/visualizer.html")
+        return flask.render_template("user_templates/visualizer.html", structure="C2")
         #return "This was a GET"
