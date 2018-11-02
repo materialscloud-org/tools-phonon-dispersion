@@ -11,6 +11,8 @@ function phononVisualizer(structure) {
 
 
     //set dom objects phononwebsite
+    p.setMaterialsList( $('#mat') );
+    p.setReferencesList( $('#ref') );
     p.setAtomPositions( $('#atompos') );
     p.setLattice( $('#lattice') );
 

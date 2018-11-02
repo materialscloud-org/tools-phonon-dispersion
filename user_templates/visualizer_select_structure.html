@@ -1,23 +1,27 @@
 <h2>Otherwise, pick an example</h2>
 <form action="compute/process_example_structure/" method="post">
-	<div style="margin-left: 20px; margin-right: 20px;">
-		<div class='alert alert-info'>
-			<div class="row">
-				<div class="col-xs-12 col-sm-6">
-					<label for="examplestructure">Select here an example:</label>
-				</div>
-				<div class="col-xs-12 col-sm-6">
-					<select name="examplestructure">
-						<option value='BN'>BN</option>
-						<option value='C2'>C2</option>
-					</select>
-				</div>
-			</div>
-			<div class='row' style="text-align: center">
-				<p class='small'></p>
-				<input type="submit" value="Calculate this example" class="btn btn-default">
-			</div>
-		</div>
-	</div>
+    <div style="margin-left: 20px; margin-right: 20px;">
+        <div class='alert alert-info'>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <label for="examplestructure">Select here an example:</label>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <select name="examplestructure">
+                        <option value='BN'>BN</option>
+                        <option value='C2'>C2</option>
+                    </select>
+                    <div id="material-list">
+                        <ul id="mat"></ul>
+                        <ul id="ref"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class='row' style="text-align: center">
+                <p class='small'></p>
+                <input type="submit" value="Calculate this example" class="btn btn-default">
+            </div>
+        </div>
+    </div>
 </form>
 

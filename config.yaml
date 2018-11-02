@@ -7,8 +7,10 @@ page_title: "Interactive Phonon Dispersion"
 #  process_data:
 #    - custom.css
 
-#custom_js_files:
-#  input_data:
+custom_js_files:
+  input_data:
+    - "user_static/js/phononwebsite.js"
+    - "user_static/js/main.js"
 #  process_data:
 #    - custom.js
 
@@ -19,7 +21,7 @@ templates:
   about: "custom_about.html"
   select_content: "visualizer_select_structure.html"
 
-use_upload_structure_block: True
+use_upload_structure_block: False
 
 additional_accordion_entries:
   - header: "Acknowledgements"
