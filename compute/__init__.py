@@ -25,7 +25,7 @@ def process_structure():
     else:
         #return flask.redirect(flask.url_for('compute.process_structure_example'))
         return flask.redirect("/")
-        return flask.redirect(flask.url_for('input_data'))
+        #return flask.redirect(flask.url_for('input_data'))
 
 @blueprint.route('/process_example_structure/', methods=['GET', 'POST'])
 def process_structure_example():
@@ -34,6 +34,6 @@ def process_structure_example():
         return flask.render_template("user_templates/visualizer.html", structure=examplestructure)
         #return "This was a POST " + examplestructure
     else:
-        return flask.redirect("/")
+        return flask.redirect(flask.url_for('input_data'))
         #return flask.render_template("user_templates/visualizer.html", structure="C2")
         #return "This was a GET"
