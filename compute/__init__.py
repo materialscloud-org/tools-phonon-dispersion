@@ -34,5 +34,6 @@ def process_structure_example():
         return flask.render_template("user_templates/visualizer.html", structure=examplestructure)
         #return "This was a POST " + examplestructure
     else:
-        return flask.render_template("user_templates/visualizer.html", structure="C2")
+        return flask.redirect(flask.url_for('compute.process_structure_example'))
+        #return flask.render_template("user_templates/visualizer.html", structure="C2")
         #return "This was a GET"
