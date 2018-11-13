@@ -1,5 +1,5 @@
-window_title: "Interactive Phonon Dispersion"
-page_title: "Interactive Phonon Dispersion"
+window_title: "Interactive phonon visualizer"
+page_title: "Interactive phonon visualizer"
 
 #custom_css_files:
 # input_data:
@@ -12,7 +12,7 @@ page_title: "Interactive Phonon Dispersion"
 #  process_data:
 #    - custom.js
 
-about_section_title: "About Interactive Phonon Dispersion"
+about_section_title: "About Interactive phonon visualizer"
 
 templates:
   how_to_cite: null
