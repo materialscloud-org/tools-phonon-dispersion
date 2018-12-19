@@ -41,6 +41,14 @@ function phononVisualizer(structure) {
     v.setAmplitudeInput($('#amplitude_box'),$('#amplitude_range'));
     v.setPlayPause($('#playpause'));
 
+    // update default settings
+    $('#drawcell').click();
+    $('#drawvectors').click();
+    $("#amplitude_range").val("0.65");
+    $("#amplitude_range").change();
+    $("#speed_range").val("0.6");
+    $("#speed_range").change();
+
     // check if webgl is available
     if ( ! Detector.webgl ) {
         Detector.addGetWebGLMessage();
