@@ -1,6 +1,6 @@
 FROM tools-barebone
 
-MAINTAINER Giovanni Pizzi <giovanni.pizzi@epfl.ch>
+MAINTAINER Materials Cloud <info@materialscloud.org>
 
 COPY ./config.yaml /home/app/code/webservice/static/config.yaml
 COPY ./user_requirements.txt /home/app/code/user_requirements.txt

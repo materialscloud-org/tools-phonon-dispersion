@@ -1,0 +1,8 @@
+version: '3'
+services:
+  tools-phonon-dispersion:
+    build: .
+    ports:
+     - "8091:80"
+    container_name: tools-phonon-dispersion-instance
+    image: tools-phonon-dispersion
