@@ -28,12 +28,13 @@
 </head>
 <body>
 <script>
+    var jsondata = JSON.parse('{{ jsondata | tojson | safe }}');
     $( document ).ready(function() {
-        phononVisualizer('{{ structure }}');
+        phononVisualizer(jsondata);
     });
 </script>
 
-<div class="material-name"><h1 id="name">Material</h1></div>
+<div class="material-name"><h1 id="name">Phonon dispersion: {{ page_title }}</h1></div>
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-3 col-sm-3">

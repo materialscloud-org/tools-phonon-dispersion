@@ -1,4 +1,4 @@
-function phononVisualizer(structure) {
+function phononVisualizer(data) {
 
     //visualizer
     v = new phononwebsite.VibCrystal($('#vibcrystal'));
@@ -21,11 +21,11 @@ function phononVisualizer(structure) {
     //p.setFileInput( $('#file-input') );
     p.setExportPOSCARButton($('#poscar'));
     p.setExportXSFButton($('#xsf'));
-    p.setTitle($('#name'));
 
     //p.updateMenu();
-    //p.loadLocalJSON(phononData);
-    p.getUrlVars({json: "../../user_static/data/" + structure + ".json", name: "Phonon dispersion: "+structure});
+    p.loadLocalJSON(data);
+    p.setTitle($('#name'));
+    //p.getUrlVars({json: "../../user_static/data/" + structure + ".json", name: "Phonon dispersion: "+structure});
 
     //set dom objects vibcrystal
     v.setCameraDirectionButton($('#camerax'),'x');

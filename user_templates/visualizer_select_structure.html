@@ -1,3 +1,5 @@
+
+
 <h2>Pick an example</h2>
 <form action="compute/process_example_structure/" method="post">
     <div style="margin-left: 20px; margin-right: 20px;">
@@ -7,14 +9,16 @@
                     <label for="examplestructure">Select here an example:</label>
                 </div>
                 <div class="col-xs-12 col-sm-6">
+                    <!-- Below website used to get unicode string for subscript number
+                    http://www.fileformat.info/info/unicode/char/search.htm?q=4&preview=entity -->
                     <select name="examplestructure">
-                        <option value='Bi2'>Bi2</option>
+                        <option value='Bi2'>Bi&#8322;</option>
                         <option value='BN'>BN</option>
-                        <option value='C2'>C2</option>
-                        <option value='CoH2O2'>CoH2O2</option>
-                        <option value='I2Pb'>I2Pb</option>
-                        <option value='MoS2'>MoS2</option>
-                        <option value='P4'>P4</option>
+                        <option value='C2'>C&#8322;</option>
+                        <option value='CoH2O2'>CoH&#8322;O&#8322;</option>
+                        <option value='I2Pb'>I&#8322;Pb</option>
+                        <option value='MoS2'>MoS&#8322;</option>
+                        <option value='P4'>P&#8324;</option>
                         <option value='PbTe'>PbTe</option>
                     </select>
                 </div>
