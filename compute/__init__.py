@@ -43,18 +43,21 @@ def show_terms_of_use():
 def process_structure():
     if flask.request.method == 'POST':
         custom_file = flask.request.files['custom_json_file']
-        print ("custom file: ", custom_file.filename)
         if custom_file:
             filename = custom_file.filename
             filecontent = custom_file.read()
             if filecontent:
-                jsondata = json.loads(filecontent)
-                return flask.render_template("user_templates/visualizer.html", structure=filename,
+                try:
+                    jsondata = json.loads(filecontent)
+                    return flask.render_template("user_templates/visualizer.html", structure=filename,
                                          page_title=Markup(filename), jsondata=jsondata)
+                except ValueError as e:
+                    flask.flash("Uploaded file is not having correct JSON format. Error: " + str(e))
             else:
-                raise FlaskRedirectException("filecontent error")
+                flask.flash("Uploaded file is empty.")
         else:
-            raise FlaskRedirectException("custom_file error")
+            flask.flash("Error in uploading file.")
+        return flask.redirect(flask.url_for('input_data'))
     else:
         return flask.redirect(flask.url_for('input_data'))
 
