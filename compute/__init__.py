@@ -5,6 +5,7 @@ import json
 import flask
 from flask import Blueprint
 from flask import Markup
+from werkzeug.utils import secure_filename
 
 blueprint = Blueprint('compute', __name__, url_prefix='/compute')
 
@@ -13,6 +14,7 @@ logger = logging.getLogger('tools-app')
 directory = os.path.abspath(os.path.split(os.path.realpath(__file__))[0] + "/../")
 static_folder = os.path.join(directory, "static")
 config_file_path = os.path.join(static_folder, "config.yaml")
+tmp_folder = os.path.join(directory, "compute/tmp")
 
 
 try:
@@ -42,7 +44,21 @@ def show_terms_of_use():
 @blueprint.route('/process_structure/', methods=['GET', 'POST'])
 def process_structure():
     if flask.request.method == 'POST':
-        custom_file = flask.request.files['custom_json_file']
+
+        custom_file = None
+        qe_scf_file = None
+        qe_modes_file = None
+
+        if "custom_json_file" in flask.request.files:
+            custom_file = flask.request.files['custom_json_file']
+
+        if "qe_scf_file" in flask.request.files:
+            qe_scf_file = flask.request.files["qe_scf_file"]
+
+        if "qe_modes_file" in flask.request.files:
+            qe_modes_file = flask.request.files["qe_modes_file"]
+
+        # CASE 1: check if custom json file is uploaded
         if custom_file:
             filename = custom_file.filename
             filecontent = custom_file.read()
@@ -55,8 +71,30 @@ def process_structure():
                     flask.flash("Uploaded file is not having correct JSON format. Error: " + str(e))
             else:
                 flask.flash("Uploaded file is empty.")
+
+        # CASE 2: QE input
+        elif qe_scf_file and qe_modes_file:
+
+            qe_scf_filename = secure_filename(qe_scf_file.filename)
+            qe_scf_file.save(os.path.join(tmp_folder, qe_scf_filename))
+
+            qe_modes_filename = secure_filename(qe_modes_file.filename)
+            qe_modes_file.save(os.path.join(tmp_folder, qe_modes_filename))
+
+            try:
+                from phononweb.qephonon import *
+                tmpdata = QePhonon("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, modes=qe_modes_filename).get_json()
+                jsondata =json.loads(tmpdata)
+                if jsondata:
+                    return flask.render_template("user_templates/visualizer.html", structure="",
+                                                 page_title=qe_scf_filename + " & " + qe_modes_filename, jsondata=jsondata)
+                else:
+                    flask.flash("Error in processing uploaded QE input files.")
+            except Exception as e:
+                flask.flash("Error in processing uploaded QE input files. Error: " + str(e))
         else:
-            flask.flash("Error in uploading file.")
+            flask.flash("Check if all required file(s) are uploaded.")
+
         return flask.redirect(flask.url_for('input_data'))
     else:
         return flask.redirect(flask.url_for('input_data'))
@@ -78,9 +116,9 @@ def process_structure_example():
 
                     return flask.render_template("user_templates/visualizer.html", structure=examplestructure, page_title=Markup(page_title), jsondata=jsondata)
                 else:
-                    raise FlaskRedirectException("data_folder path is missing in config file")
+                    raise FlaskRedirectException("data_folder path is missing in config file.")
             else:
-                raise FlaskRedirectException("Config file is missing")
+                raise FlaskRedirectException("Config file is missing.")
         except FlaskRedirectException as e:
             flask.flash(str(e))
             return flask.redirect(flask.url_for('input_data'))
