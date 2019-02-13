@@ -29,26 +29,35 @@ except IOError as exc:
 class FlaskRedirectException(Exception):
     pass
 
+@blueprint.route('/custom_json_format/', methods=['GET'])
+def show_custom_json_format():
+    return "add custom json format here."
+
+
+@blueprint.route('/terms_of_use/', methods=['GET'])
+def show_terms_of_use():
+    return "add terms here."
+
+
 @blueprint.route('/process_structure/', methods=['GET', 'POST'])
 def process_structure():
     if flask.request.method == 'POST':
-        structurefile = flask.request.files['structurefile']
-        fileformat = flask.request.form.get('fileformat', 'unknown')
-        filecontent = structurefile.read().decode('utf-8')
-
-        try:
-            return "FORMAT: {}<br>CONTENT:<br><code><pre>{}</pre></code>".format(fileformat, filecontent)
-        #except FlaskRedirectException as e:
-            #flask.flash(str(e))
-            #return flask.redirect(flask.url_for('input_data'))
-        except Exception:
-            flask.flash("Unable to process the data, sorry...")
-            return flask.redirect(flask.url_for('input_data'))
-
+        custom_file = flask.request.files['custom_json_file']
+        print ("custom file: ", custom_file.filename)
+        if custom_file:
+            filename = custom_file.filename
+            filecontent = custom_file.read()
+            if filecontent:
+                jsondata = json.loads(filecontent)
+                return flask.render_template("user_templates/visualizer.html", structure=filename,
+                                         page_title=Markup(filename), jsondata=jsondata)
+            else:
+                raise FlaskRedirectException("filecontent error")
+        else:
+            raise FlaskRedirectException("custom_file error")
     else:
-        #return flask.redirect(flask.url_for('compute.process_structure_example'))
-        return flask.redirect("/")
-        #return flask.redirect(flask.url_for('input_data'))
+        return flask.redirect(flask.url_for('input_data'))
+
 
 @blueprint.route('/process_example_structure/', methods=['GET', 'POST'])
 def process_structure_example():
