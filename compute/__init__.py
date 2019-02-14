@@ -35,7 +35,7 @@ class FlaskRedirectException(Exception):
 
 @blueprint.route('/custom_json_format/', methods=['GET'])
 def show_custom_json_format():
-    return "add custom json format here."
+    return flask.send_from_directory(template_folder, 'sample_custom_json.html')
 
 
 @blueprint.route('/terms_of_use/', methods=['GET'])
