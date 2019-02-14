@@ -17,7 +17,7 @@ directory = os.path.abspath(os.path.split(os.path.realpath(__file__))[0] + "/../
 static_folder = os.path.join(directory, "static")
 config_file_path = os.path.join(static_folder, "config.yaml")
 tmp_folder = os.path.join(directory, "compute/tmp")
-
+template_folder = os.path.join(directory, 'templates/user_templates')
 
 try:
     with open(config_file_path) as config_file:
@@ -40,7 +40,10 @@ def show_custom_json_format():
 
 @blueprint.route('/terms_of_use/', methods=['GET'])
 def show_terms_of_use():
-    return "add terms here."
+    """
+    View for the terms of use
+    """
+    return flask.send_from_directory(template_folder, 'terms_of_use.html')
 
 
 @blueprint.route('/process_structure/', methods=['GET', 'POST'])
