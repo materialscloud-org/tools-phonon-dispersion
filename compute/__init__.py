@@ -7,6 +7,8 @@ from flask import Blueprint
 from flask import Markup
 from werkzeug.utils import secure_filename
 
+from compute.phononweb.qephonon import *
+
 blueprint = Blueprint('compute', __name__, url_prefix='/compute')
 
 logger = logging.getLogger('tools-app')
@@ -61,7 +63,7 @@ def process_structure():
         # CASE 1: check if custom json file is uploaded
         if custom_file:
             filename = custom_file.filename
-            filecontent = custom_file.read()
+            filecontent = custom_file.read().decode('utf8')
             if filecontent:
                 try:
                     jsondata = json.loads(filecontent)
@@ -82,7 +84,6 @@ def process_structure():
             qe_modes_file.save(os.path.join(tmp_folder, qe_modes_filename))
 
             try:
-                from phononweb.qephonon import *
                 tmpdata = QePhonon("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, modes=qe_modes_filename).get_json()
                 jsondata =json.loads(tmpdata)
                 if jsondata:
