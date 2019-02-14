@@ -2,6 +2,42 @@
 <div style="margin-left: 20px; margin-right: 20px">
     <form action="compute/process_structure/" enctype="multipart/form-data" method="post">
         <div class='alert alert-info'>
+            <div class="row">
+                <div class='col-xs-12 col-sm-12'>
+                    <p style="font-size:smaller;color: brown;">
+                        <a href="compute/input_help/" target="_blank" style="text-decoration: underline;">Click here</a> to get more information on input files.
+                    </p>
+                </div>
+            </div>
+
+            <div class='row'>
+                <div class='col-xs-12 col-sm-12'>
+                    <label for="qeinput">Upload Quantum Espresso files:</label>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-xs-12 col-sm-4'>
+                    <label for="qescffile">1. upload .scf file: </label>
+                </div>
+                <div class='col-xs-12 col-sm-8'>
+                    <input type="file" name="qe_scf_file" size="100">
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-xs-12 col-sm-4'>
+                    <label for="qemodesfile">2. upload .modes file: </label>
+                </div>
+                <div class='col-xs-12 col-sm-8'>
+                    <input type="file" name="qe_modes_file" size="100">
+                </div>
+            </div>
+
+            <div class="row" style="text-align:center;">
+                <div class='col-xs-12 col-sm-12'>
+                    <p style="line-height: 42px; margin-bottom: 0px;">OR</p>
+                </div>
+            </div>
+
             <div class='row'>
                 <div class='col-xs-12 col-sm-4'>
                     <label for="file">Upload custom JSON format: </label>
@@ -10,39 +46,7 @@
                     <input type="file" name="custom_json_file" size="100">
                 </div>
             </div>
-            <div class="row">
-                <div class='col-xs-12 col-sm-12'>
-                    <p style="font-size:smaller;color: brown;">
-                        <a href="compute/custom_json_format/" target="_blank" style="text-decoration: underline;">Click here</a> to check the sample JSON format used in this tool.
-                    </p>
-                </div>
-            </div>
-            <div class="row" style="text-align:center;">
-                <div class='col-xs-12 col-sm-12'>
-                    <p>OR</p>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-xs-12 col-sm-12'>
-                    <label for="qeinput">Upload QE inputs:</label>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-xs-12 col-sm-4'>
-                    <label for="qescffile">Upload QE .scf file: </label>
-                </div>
-                <div class='col-xs-12 col-sm-8'>
-                    <input type="file" name="qe_scf_file" size="100">
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-xs-12 col-sm-4'>
-                    <label for="qemodesfile">Upload QE .modes file: </label>
-                </div>
-                <div class='col-xs-12 col-sm-8'>
-                    <input type="file" name="qe_modes_file" size="100">
-                </div>
-            </div>
+
             <div class='row' style="text-align:center; margin-top: 20px;">
                 <p class='small'>By continuing, you agree with the <a href="compute/terms_of_use/" target="_blank" style="text-decoration: underline;">terms of use</a> of this service.</p>
                 <input type="submit" value="Calculate phonon dispersion" class="btn btn-default">

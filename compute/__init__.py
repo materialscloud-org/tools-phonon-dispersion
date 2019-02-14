@@ -33,9 +33,9 @@ except IOError as exc:
 class FlaskRedirectException(Exception):
     pass
 
-@blueprint.route('/custom_json_format/', methods=['GET'])
+@blueprint.route('/input_help/', methods=['GET'])
 def show_custom_json_format():
-    return flask.send_from_directory(template_folder, 'sample_custom_json.html')
+    return flask.send_from_directory(template_folder, 'input_help_text.html')
 
 
 @blueprint.route('/terms_of_use/', methods=['GET'])
