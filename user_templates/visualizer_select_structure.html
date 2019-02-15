@@ -10,35 +10,43 @@
                 </div>
             </div>
 
-            <div class='row'>
-                <div class='col-xs-12 col-sm-12'>
-                    <label for="qeinput">Upload Quantum Espresso files:</label>
+            <div class='row' style="margin-bottom: 10px; margin-top: 10px;">
+                <div class='col-sm-4'>
+                    <label for="fileformat">Select the input type:</label>
                 </div>
-            </div>
-            <div class='row'>
-                <div class='col-xs-12 col-sm-4'>
-                    <label for="qescffile">1. upload .scf file: </label>
-                </div>
-                <div class='col-xs-12 col-sm-8'>
-                    <input type="file" name="qe_scf_file" size="100">
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-xs-12 col-sm-4'>
-                    <label for="qemodesfile">2. upload .modes file: </label>
-                </div>
-                <div class='col-xs-12 col-sm-8'>
-                    <input type="file" name="qe_modes_file" size="100">
+                <div class='col-sm-8'>
+                    <select name="fileformat" id="fileformatSelect">
+                        <option value="qe_files">Quantum ESPRESSO files</option>
+                        <option value="custom_json_files">Custom JSON format</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="row" style="text-align:center;">
-                <div class='col-xs-12 col-sm-12'>
-                    <p style="line-height: 42px; margin-bottom: 0px;">OR</p>
+            <div id="qe-input-block">
+                <div class='row'>
+                    <div class='col-xs-12 col-sm-12'>
+                        <label for="qeinput">Upload Quantum Espresso files:</label>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-12 col-sm-4'>
+                        <label for="qescffile">1. upload .scf file: </label>
+                    </div>
+                    <div class='col-xs-12 col-sm-8'>
+                        <input type="file" name="qe_scf_file" size="100">
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class='col-xs-12 col-sm-4'>
+                        <label for="qemodesfile">2. upload .modes file: </label>
+                    </div>
+                    <div class='col-xs-12 col-sm-8'>
+                        <input type="file" name="qe_modes_file" size="100">
+                    </div>
                 </div>
             </div>
 
-            <div class='row'>
+            <div class='row' id="custom_json_input_block" style="display: none">
                 <div class='col-xs-12 col-sm-4'>
                     <label for="file">Upload custom JSON format: </label>
                 </div>
@@ -87,5 +95,20 @@
 </form>
 
 <script>
-    $('input[type=file]').val(null)
+    $( function() {
+        $('input[type=file]').val(null);
+        $('#fileformatSelect > option:eq(0)').prop('selected', true);
+
+        $( "#fileformatSelect" ).change(function() {
+            if ( $(this).val() == "qe_files" ) {
+                $("#qe-input-block").show();
+                $("#custom_json_input_block" ).hide();
+            }
+            else if ($(this).val() == "custom_json_files") {
+                $("#qe-input-block").hide();
+                $("#custom_json_input_block" ).show();
+            }
+        });
+    });
+
 </script>
