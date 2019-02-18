@@ -5,19 +5,19 @@
             <div class="row">
                 <div class='col-xs-12 col-sm-12'>
                     <p style="font-size:smaller;color: brown;">
-                        <a href="compute/input_help/" target="_blank" style="text-decoration: underline;">Click here</a> to get more information on input files.
+                        <a href="compute/input_help/" target="_blank" style="text-decoration: underline;">Click here</a> for more information on supported file formats.
                     </p>
                 </div>
             </div>
 
             <div class='row' style="margin-bottom: 10px; margin-top: 10px;">
                 <div class='col-sm-4'>
-                    <label for="fileformat">Select the input type:</label>
+                    <label for="fileformat">Input format:</label>
                 </div>
                 <div class='col-sm-8'>
                     <select name="fileformat" id="fileformatSelect">
                         <option value="qe_files">Quantum ESPRESSO files</option>
-                        <option value="custom_json_files">Custom JSON format</option>
+                        <option value="custom_json_files">PhononVis JSON format</option>
                     </select>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                 </div>
                 <div class='row'>
                     <div class='col-xs-12 col-sm-4'>
-                        <label for="qescffile">1. upload .scf file: </label>
+                        <label for="qescffile">1. .scf input file: </label>
                     </div>
                     <div class='col-xs-12 col-sm-8'>
                         <input type="file" name="qe_scf_file" size="100">
@@ -38,7 +38,7 @@
                 </div>
                 <div class='row'>
                     <div class='col-xs-12 col-sm-4'>
-                        <label for="qemodesfile">2. upload .modes file: </label>
+                        <label for="qemodesfile">2. .modes file (matdyn.x output): </label>
                     </div>
                     <div class='col-xs-12 col-sm-8'>
                         <input type="file" name="qe_modes_file" size="100">
@@ -48,7 +48,9 @@
 
             <div class='row' id="custom_json_input_block" style="display: none">
                 <div class='col-xs-12 col-sm-4'>
-                    <label for="file">Upload custom JSON format: </label>
+                    <label for="file">
+                        <a href="compute/input_help/#phononvis-json" target="_blank" style="text-decoration: underline;">PhononVis JSON file:</a>
+                    </label>
                 </div>
                 <div class="col-xs-12 col-sm-8">
                     <input type="file" name="custom_json_file" size="100">
