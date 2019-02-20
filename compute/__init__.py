@@ -7,7 +7,7 @@ from flask import Blueprint
 from flask import Markup
 from werkzeug.utils import secure_filename
 
-from compute.phononweb.qephonon import *
+from compute.phononweb.qephonon_qetools import QePhononQetools
 
 blueprint = Blueprint('compute', __name__, url_prefix='/compute')
 
@@ -87,7 +87,7 @@ def process_structure():
             qe_modes_file.save(os.path.join(tmp_folder, qe_modes_filename))
 
             try:
-                tmpdata = QePhonon("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, modes=qe_modes_filename).get_json()
+                tmpdata = QePhononQetools("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, modes=qe_modes_filename).get_json()
                 jsondata =json.loads(tmpdata)
                 if jsondata:
                     return flask.render_template("user_templates/visualizer.html", structure="",
