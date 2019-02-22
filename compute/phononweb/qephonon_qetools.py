@@ -1,9 +1,8 @@
-# Copyright (c) 2017, Henrique Miranda
+# Copyright (c) 2019, Giovanni Pizzi
 # All rights reserved.
-#
-# This file is part of the phononwebsite project
-#
+
 """ Read phonon dispersion from quantum espresso """
+
 import re
 from math import pi
 import numpy as np
@@ -284,11 +283,3 @@ class QePhononQetools(Phonon):
         self.atom_numbers = numbers  # atom number for each atom (integer)
 
         self.chemical_formula = self.get_chemical_formula()
-
-        ## NOTE: self.get_highsym_qpts() -> from the __init__
-        ##       self.reps in __init__
-
-        ## Not sure if these are needed
-        #self.atomic_numbers = np.unique(self.atom_numbers)
-        #self.chemical_symbols = np.unique(self.atom_types).tolist()
-
