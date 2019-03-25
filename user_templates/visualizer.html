@@ -32,7 +32,6 @@
     var enableStrInteraction = false;
 
     function toggleStrVisInteraction() {
-        console.log("1. ", enableStrInteraction);
         if (enableStrInteraction){
             // enable interaction here
             $("#str-overlay").css("display", "none");
@@ -57,7 +56,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-3">
-            <div class="shadow-box">
+            <div class="shadow-box" style="margin-top: 33px;">
                 <div class="metadata-container">
                     <h3>Settings</h3>
                     <div id="options-list" class="phonon-properties">
@@ -136,6 +135,7 @@
             </div>
         </div>
         <div class="col-sm-4 col-md-4">
+            <div class="shadow-box-help"><p><em>Drag to rotate, scroll to zoom</em></p></div>
             <div class="shadow-box">
                 <div class="vis-container">
                     <div class="phonon-crystal" id="vibcrystal" ondblclick="toggleStrVisInteraction();"></div>
@@ -146,6 +146,7 @@
             </div>
         </div>
         <div class="col-sm-5 col-md-5">
+            <div class="shadow-box-help"><p><em>Phonon band structure (select phonon)</em></p></div>
             <div class="shadow-box">
                 <div class="vis-container">
                     <div class="phonon-highchart" id="vibhighcharts"></div>
