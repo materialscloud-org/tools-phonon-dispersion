@@ -9,6 +9,11 @@ from werkzeug.utils import secure_filename
 
 from compute.phononweb.qephonon_qetools import QePhononQetools
 
+import qe_tools # mostly to get its version
+from tools_barebone import __version__ as tools_barebone_version
+
+__version__ = "20.09.0"
+
 blueprint = Blueprint('compute', __name__, url_prefix='/compute')
 
 logger = logging.getLogger('tools-app')
@@ -29,6 +34,15 @@ except IOError as exc:
         data_folder = None
     else:
         raise
+
+def get_version_info():
+    """Return a dictionary with the version info, to be put at the footer."""
+    return {
+        'qe_tools_version': qe_tools.__version__,
+        'this_tool_version': __version__,
+        'tools_barebone_version': tools_barebone_version
+    }
+
 
 class FlaskRedirectException(Exception):
     pass
@@ -71,7 +85,7 @@ def process_structure():
                 try:
                     jsondata = json.loads(filecontent)
                     return flask.render_template("user_templates/visualizer.html", structure=filename,
-                                         page_title=Markup(filename), jsondata=jsondata)
+                                         page_title=Markup(filename), jsondata=jsondata, **get_version_info())
                 except ValueError as e:
                     flask.flash("Uploaded file is not having correct JSON format. Error: " + str(e))
             else:
@@ -91,7 +105,7 @@ def process_structure():
                 jsondata =json.loads(tmpdata)
                 if jsondata:
                     return flask.render_template("user_templates/visualizer.html", structure="",
-                                                 page_title=qe_scf_filename + " & " + qe_modes_filename, jsondata=jsondata)
+                                                 page_title=qe_scf_filename + " & " + qe_modes_filename, jsondata=jsondata, **get_version_info())
                 else:
                     flask.flash("Error in processing uploaded QE input files.")
             except Exception as e:
@@ -118,7 +132,8 @@ def process_structure_example():
                     with open(filepath) as structurefile:
                         jsondata = json.load(structurefile)
 
-                    return flask.render_template("user_templates/visualizer.html", structure=examplestructure, page_title=Markup(page_title), jsondata=jsondata)
+                    return flask.render_template("user_templates/visualizer.html",
+                        structure=examplestructure, page_title=Markup(page_title), jsondata=jsondata, **get_version_info())
                 else:
                     raise FlaskRedirectException("data_folder path is missing in config file.")
             else:
