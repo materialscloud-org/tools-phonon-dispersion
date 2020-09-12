@@ -6,7 +6,7 @@
     <title>Interactive phonon visualizer</title>
     <link rel="stylesheet" type="text/css" href="../../user_static/css/jquery-ui.1.12.1.min.css"/>
     <link href="../../static/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="../../user_static/css/mcloud_theme.css"/>
+    <link rel="stylesheet" type="text/css" href="../../user_static/css/mcloud_theme.min.css"/>
     <link rel="stylesheet" type="text/css" href="../../user_static/css/visualizer.css"/>
 
     <script src="../../static/js/jquery-3.1.0.min.js"></script>
@@ -29,16 +29,34 @@
 <body>
 <script>
     var jsondata = JSON.parse('{{ jsondata | tojson | safe }}');
+    var enableStrInteraction = false;
+
+    function toggleStrVisInteraction() {
+        if (enableStrInteraction){
+            // enable interaction here
+            $("#str-overlay").css("display", "none");
+            $("#vibcrystal").css('pointer-events', 'auto');
+            enableStrInteraction = false;
+        }
+        else{
+            // disable interaction here
+            $("#str-overlay").css("display", "table");
+            $("#vibcrystal").css('pointer-events', 'none');
+            enableStrInteraction = true;
+        }
+    }
+
     $( document ).ready(function() {
         phononVisualizer(jsondata);
     });
+    toggleStrVisInteraction();
 </script>
 
 <div class="material-name"><h1 id="name">Phonon dispersion: {{ page_title }}</h1></div>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-3 col-md-3 col-sm-3">
-            <div class="shadow-box">
+        <div class="col-sm-3 col-md-3">
+            <div class="shadow-box" style="margin-top: 33px;">
                 <div class="metadata-container">
                     <h3>Settings</h3>
                     <div id="options-list" class="phonon-properties">
@@ -116,14 +134,21 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-4 col-md-4 col-sm-4">
+        <div class="col-sm-4 col-md-4">
+            <div class="shadow-box-help"><p><em>Drag to rotate, scroll to zoom</em></p></div>
             <div class="shadow-box">
                 <div class="vis-container">
-                    <div class="phonon-crystal" id="vibcrystal"></div>
+                    <div class="phonon-crystal" id="vibcrystal" ondblclick="toggleStrVisInteraction();"></div>
+                    <div id="str-overlay" class="overlay-div" ondblclick="toggleStrVisInteraction();">
+                        <span>Double-click to toggle interactions on and off
+                        <br>
+                        <small>(This feature is not available on iPad and iPhone)</small></span>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-sm-5 col-md-5 col-sm-5">
+        <div class="col-sm-5 col-md-5">
+            <div class="shadow-box-help"><p><em>Phonon band structure (select phonon)</em></p></div>
             <div class="shadow-box">
                 <div class="vis-container">
                     <div class="phonon-highchart" id="vibhighcharts"></div>
@@ -132,7 +157,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-6 col-md-6 col-sm-6">
+        <div class="col-sm-6 col-md-6">
             <div class="shadow-box">
                 <div class="metadata-container">
                     <h3>Lattice parameters (Ångström):</h3>
@@ -143,7 +168,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-md-6 col-sm-6">
+        <div class="col-sm-6 col-md-6">
             <div class="shadow-box">
                 <div class="metadata-container">
                     <h3>Atomic positions (reduced):</h3>
@@ -158,6 +183,14 @@
     <div id='finalinfo'>
         <p><span style="font-weight: bold;">Technical info</span>: <a href="https://github.com/aiidateam/qe-tools">qe-tools</a> version: {{ qe_tools_version }}. <a href="https://github.com/materialscloud-org/tools-barebone">tools-barebone</a> version: {{tools_barebone_version}}. <a href="https://github.com/materialscloud-org/tools-phonon-dispersion">tools-phonon-dispersion</a> version: {{this_tool_version}}.
     </div>
+</div>
+
+<hr>
+
+<div id='finalinfo' style="margin-left: 40px; margin-bottom: 15px;">
+    <p>
+        <span style="font-weight: bold;">Technical info</span>: Phonon visualizer by Henrique Miranda. qe-tools version: v1.1.2.
+    </p>
 </div>
 
 <div style ="position: relative" data-iframe-height></div>
