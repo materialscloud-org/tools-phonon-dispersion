@@ -1,4 +1,4 @@
-FROM materialscloud/tools-barebone:1.0.0
+FROM materialscloud/tools-barebone:1.1.3
 
 LABEL maintainer="Materials Cloud <info@materialscloud.org>"
 
