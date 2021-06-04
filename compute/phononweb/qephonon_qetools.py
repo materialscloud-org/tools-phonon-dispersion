@@ -7,8 +7,7 @@ import re
 from math import pi
 import numpy as np
 
-import qe_tools
-
+from tools_barebone.structure_importers import get_structure_tuple
 from .phononweb import Phonon, bohr_angstroem, atomic_numbers
 from .lattice import car_red, rec_lat
 
@@ -224,62 +223,23 @@ class QePhononQetools(Phonon):
         """ 
         read the data from a quantum espresso input file
         """
-        from qe_tools.constants import bohr_to_ang
-
+        fileformat = "qeinp-qetools"
         with open(filename) as f:
-            pwfile = qe_tools.PwInputFile(f)
-        pwparsed = pwfile.get_structure_from_qeinput()
+            (cell, rel_positions, numbers) = get_structure_tuple(f, fileformat)
 
-        cell = np.array(pwparsed['cell']) # angstrom
-        rel_positions = np.dot(pwparsed['positions'],
-                              np.linalg.inv(cell)).tolist()
-        
         self.pos = rel_positions # reduced coords
-        self.cell = cell  # / bohr_to_ang
+        self.cell = np.array(cell)
         self.rec = rec_lat(self.cell)*2*pi
 
-        ## This piece is taken (and adapted to also get the element name) from the structure converter of
-        ## seekpath, to decide if we want to put in qe_tools?
-        species_dict = {
-            name: pseudo_file_name for name, pseudo_file_name in zip(
-                pwparsed['species']['names'], pwparsed['species'][
-                    'pseudo_file_names'])
-        }
-
-        numbers = []
-        atom_names = []
-        # Heuristics to get the chemical element
-        for name in pwparsed['atom_names']:
-            # Take only characters, take only up to two characters
-            chemical_name = "".join(
-                char for char in name if char.isalpha())[:2].capitalize()
-            number_from_name = atoms_num_dict.get(chemical_name, None)
-            # Infer chemical element from element
-            pseudo_name = species_dict[name]
-            name_from_pseudo = pseudo_name
-            for sep in ['-', '.', '_']:
-                name_from_pseudo = name_from_pseudo.partition(sep)[0]
-            name_from_pseudo = name_from_pseudo.capitalize()
-            atom_names.append(name_from_pseudo)
-            number_from_pseudo = atoms_num_dict.get(name_from_pseudo, None)
-
-            if number_from_name is None and number_from_pseudo is None:
-                raise KeyError(
-                    'Unable to parse the chemical element either from the atom name or for the pseudo name'
-                )
-            # I make number_from_pseudo prioritary if both are parsed,
-            # even if they are different
-            if number_from_pseudo is not None:
-                numbers.append(number_from_pseudo)
-                continue
-
-            # If we are here, number_from_pseudo is None and number_from_name is not
-            numbers.append(number_from_name)
-            continue
-
         self.natoms = len(rel_positions) # number of atoms
+        self.atom_numbers = numbers  # atom number for each atom (integer)
+
+        atom_names = []
+        for n in numbers:
+            for atom_name, atom_number in atoms_num_dict.items():
+                if atom_number == n:
+                    atom_names.append(atom_name)
 
         self.atom_types = atom_names # atom type for each atom (string)
-        self.atom_numbers = numbers  # atom number for each atom (integer)
 
         self.chemical_formula = self.get_chemical_formula()
