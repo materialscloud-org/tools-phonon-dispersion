@@ -1,20 +1,6 @@
-FROM materialscloud/tools-barebone:1.0.0
+FROM materialscloud/tools-barebone:1.1.3
 
 LABEL maintainer="Materials Cloud <info@materialscloud.org>"
-
-# Python requirements
-COPY ./requirements.txt /home/app/code/requirements.txt
-# Run this as sudo to replace the version of pip
-RUN pip3 install -U 'pip>=10' setuptools wheel
-# install packages as normal user (app, provided by passenger)
-USER app
-WORKDIR /home/app/code
-# Install pinned versions of packages
-RUN pip3 install --user -r requirements.txt
-# Go back to root.
-# Also, it should remain as user root for startup
-USER root
-
 
 # Copy various files
 COPY ./config.yaml /home/app/code/webservice/static/config.yaml
