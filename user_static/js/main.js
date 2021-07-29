@@ -24,7 +24,7 @@ function phononVisualizer(data) {
 
     //p.updateMenu();
     p.loadLocalJSON(data);
-    p.setTitle($('#name'));
+    //p.setTitle($('#name')); // Commented out - now it's set from the Jinja2 template
     //p.getUrlVars({json: "../../user_static/data/" + structure + ".json", name: "Phonon dispersion: "+structure});
 
     //set dom objects vibcrystal

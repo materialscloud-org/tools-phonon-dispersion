@@ -12,7 +12,7 @@ from compute.phononweb.qephonon_qetools import QePhononQetools
 import qe_tools # mostly to get its version
 from tools_barebone import __version__ as tools_barebone_version
 
-__version__ = "21.07.0"
+__version__ = "21.07.1"
 
 blueprint = Blueprint('compute', __name__, url_prefix='/compute')
 
@@ -112,7 +112,7 @@ def process_structure():
                 jsondata =json.loads(tmpdata)
                 if jsondata:
                     return flask.render_template("user_templates/visualizer.html", structure="",
-                                                 page_title=qe_scf_filename + " & " + qe_modes_filename, jsondata=jsondata, **get_version_info())
+                                                 page_title=qe_scf_filename + " & " + qe_output_filename + " & " + qe_modes_filename, jsondata=jsondata, **get_version_info())
                 else:
                     flask.flash("Error in processing uploaded QE input files.")
             except Exception as e:
