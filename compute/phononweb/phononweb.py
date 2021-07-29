@@ -308,7 +308,8 @@ class Phonon():
                 "eigenvalues": self.eigenvalues,  # eigenvalues (in units of cm-1)
                 "distances": self.distances,  # list distances between the qpoints
                 "highsym_qpts": self.highsym_qpts,  # list of high symmetry qpoints
-                "vectors": self.eigenvectors}  # eigenvectors
+                "vectors": self.eigenvectors, # eigenvectors
+                "alat": getattr(self, 'alat', None)} # alat in angstrom 
 
         return json.dumps(data, cls=JsonEncoder, indent=1)
 

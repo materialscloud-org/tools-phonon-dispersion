@@ -12,10 +12,11 @@ This tool leverages the `phonon visualizer`_ developed by Henrique Miranda.
 Contributors
 ============
 
-- Snehal Kumbhar (EPFL) [tool development]
+- Snehal Kumbhar, Elsa Passaro (EPFL) [tool development]
 - Giovanni Pizzi (EPFL) [tool development]
 - Henrique Miranda (UCL, Belgium) [development of the original phonon visualizer]
 - Thibault Sohier (EPFL) [support on the python code and on the examples]
+- Chara Cignarella (EPFL) [bug reporting and fixing]
 
 =======
 License
