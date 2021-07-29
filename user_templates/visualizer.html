@@ -160,11 +160,14 @@
         <div class="col-sm-6 col-md-6">
             <div class="shadow-box">
                 <div class="metadata-container">
-                    <h3>Lattice parameters (Ångström):</h3>
+                    <h3>Lattice parameters (Å):</h3>
                     <div>
                         <table id="lattice" class="table attribute-table numbers-font-family">
                         </table>
                     </div>
+
+                    {% if 'alat' in jsondata and jsondata.alat is not none %}<h4>Parsed a<sub>lat</sub> from Quantum ESPRESSO: <span style="color: black;"><span>{{jsondata.alat}}</span> Å</span></h4>
+                    <p>Note: This value is parsed from the output file you provided. No check have been performed to validate that the input file and the output file you provided are from the same run. Please double check yourself!</p>{% endif %}
                 </div>
             </div>
         </div>

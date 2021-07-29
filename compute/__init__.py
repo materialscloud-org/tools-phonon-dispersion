@@ -12,7 +12,7 @@ from compute.phononweb.qephonon_qetools import QePhononQetools
 import qe_tools # mostly to get its version
 from tools_barebone import __version__ as tools_barebone_version
 
-__version__ = "21.06.0"
+__version__ = "21.07.0"
 
 blueprint = Blueprint('compute', __name__, url_prefix='/compute')
 
@@ -66,6 +66,7 @@ def process_structure():
 
         custom_file = None
         qe_scf_file = None
+        qe_output_file = None
         qe_modes_file = None
 
         if "custom_json_file" in flask.request.files:
@@ -73,6 +74,9 @@ def process_structure():
 
         if "qe_scf_file" in flask.request.files:
             qe_scf_file = flask.request.files["qe_scf_file"]
+
+        if "qe_output_file" in flask.request.files:
+            qe_output_file = flask.request.files["qe_output_file"]
 
         if "qe_modes_file" in flask.request.files:
             qe_modes_file = flask.request.files["qe_modes_file"]
@@ -92,16 +96,19 @@ def process_structure():
                 flask.flash("Uploaded file is empty.")
 
         # CASE 2: QE input
-        elif qe_scf_file and qe_modes_file:
+        elif qe_scf_file and qe_output_file and qe_modes_file:
 
             qe_scf_filename = secure_filename(qe_scf_file.filename)
             qe_scf_file.save(os.path.join(tmp_folder, qe_scf_filename))
+
+            qe_output_filename = secure_filename(qe_output_file.filename)
+            qe_output_file.save(os.path.join(tmp_folder, qe_output_filename))
 
             qe_modes_filename = secure_filename(qe_modes_file.filename)
             qe_modes_file.save(os.path.join(tmp_folder, qe_modes_filename))
 
             try:
-                tmpdata = QePhononQetools("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, modes=qe_modes_filename).get_json()
+                tmpdata = QePhononQetools("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, scf_output=qe_output_filename, modes=qe_modes_filename).get_json()
                 jsondata =json.loads(tmpdata)
                 if jsondata:
                     return flask.render_template("user_templates/visualizer.html", structure="",

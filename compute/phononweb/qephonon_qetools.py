@@ -135,7 +135,7 @@ class QePhononQetools(Phonon):
                 <prefix>.modes file that is the output of the matdyn.x or dynmat.x programs
     """
     def __init__(self,prefix,name,reps=(3,3,3),folder='.',
-                 highsym_qpts=None,reorder=True,scf=None,modes=None):
+                 highsym_qpts=None,reorder=True,scf=None,scf_output=None,modes=None):
         self.prefix = prefix
         self.name = name
         self.reps = reps
@@ -147,6 +147,10 @@ class QePhononQetools(Phonon):
         else :    filename = "%s/%s.scf"%(self.folder,self.prefix)
         self.read_atoms(filename)
         
+        if scf_output: filename = "%s/%s"%(self.folder,scf_output)
+        else :    raise ValueError("pw.x or ph.x output file not specified")
+        self.read_alat(filename)
+
         #read modes
         if modes: filename = "%s/%s"%(self.folder,modes)
         else :    filename = "%s/%s.modes"%(self.folder,self.prefix)
@@ -161,7 +165,7 @@ class QePhononQetools(Phonon):
 
     def read_modes(self,filename):
         """
-        Function to read the eigenvalues and eigenvectors from Quantum Expresso
+        Function to read the eigenvalues and eigenvectors from Quantum ESPRESSO
         """
         with open(filename,'r') as f:
             file_list = f.readlines()
@@ -215,7 +219,14 @@ class QePhononQetools(Phonon):
         self.eigenvectors = vec.view(dtype=float).reshape([self.nqpoints,nphons,nphons,2])
         self.qpoints      = qpt
 
-        #convert to cartesian coordinates
+        # convert from cartesian coordinates (units of 2pi/alat, alat is the alat of the code)
+        # to reduced coordinates
+        # First, I need to convert from 2pi/alat units (as written in the matdyn.modes file) to 
+        # 1/angstrom (as self.rec is)
+        self.qpoints = np.array(self.qpoints) * 2 * np.pi / self.alat
+
+        # now that I have self.qpoints in 1/agstrom, I can just use self.rec to convert to reduced
+        # coordinates since self.rec is in units of 1/angstrom
         self.qpoints = car_red(self.qpoints,self.rec)
         return self.eigenvalues, self.eigenvectors, self.qpoints
 
@@ -243,3 +254,24 @@ class QePhononQetools(Phonon):
         self.atom_types = atom_names # atom type for each atom (string)
 
         self.chemical_formula = self.get_chemical_formula()
+
+
+    def read_alat(self,filename):
+        """ 
+        Read the data from a quantum espresso output file.
+
+        At the moment, it's used only to read `alat` since it's not univocally defined from
+        the crystal structure in the input (ibrav=0 uses the length of the first vector, but this behavior
+        changes between 5.0 and 6.0 in QE, or it's manually specified).
+        Better to parse it from the output.
+        """
+        with open(filename, 'r') as fhandle:
+            matching_lines = [l for l in fhandle.readlines() if 'lattice parameter (alat)' in l and 'a.u.' in l]
+        if not matching_lines:
+            raise ValueError("No lines with alat found in QE output file")
+        if len(matching_lines) > 1:
+            raise ValueError("Multiple lines with alat found in QE output file...")
+        alat_line = matching_lines[0]
+        alat_bohr = float(alat_line.split()[4])
+        # Convert to angstrom from Bohr (a.u.) - same conversion factor as qe_tools
+        self.alat = alat_bohr * 0.52917720859
