@@ -3,15 +3,17 @@
 #
 # This file is part of the phononwebsite project
 #
-""" Read phonon dispersion from quantum espresso """
+""" Read phonon dispersion from Quantum ESPRESSO """
 from math import pi
 import numpy as np
-from .pw import *
+import re
+from .pw import PwIn
+from .lattice import car_red, rec_lat
 from .phononweb import Phonon, bohr_angstroem, atomic_numbers
 
 class QePhonon(Phonon):
     """
-    Class to read phonons from Quantum Espresso
+    Class to read phonons from Quantum ESPRESSO
 
     Input:
         prefix: <prefix>.scf file where the structure is stored
@@ -44,14 +46,18 @@ class QePhonon(Phonon):
 
     def read_modes(self,filename):
         """
-        Function to read the eigenvalues and eigenvectors from Quantum Expresso
+        Function to read the eigenvalues and eigenvectors from Quantum ESPRESSO
         """
         with open(filename,'r') as f:
             file_list = f.readlines()
             file_str  = "".join(file_list)
 
         #determine the numer of atoms
-        nphons = max([int(x) for x in re.findall( '(?:freq|omega) \((.+)\)', file_str )])
+        lines_with_freq = [int(x) for x in re.findall(r'(?:freq|omega) \((.+)\)', file_str )]
+        if not lines_with_freq:
+            raise ValueError("Unable to find the lines with the frequencies in the matdyn.modes file. "
+            "Please check that you uploaded the correct file!")
+        nphons = max(lines_with_freq)
         atoms = int(nphons/3)
 
         #check if the number fo atoms is the same
@@ -74,11 +80,11 @@ class QePhonon(Phonon):
             for n in range(nphons):
                 #read eigenvalues
                 eig_idx = k_idx+2+n*(atoms+1)
-                reig = re.findall('=\s+([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx])[1]
+                reig = re.findall(r'=\s+([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx])[1]
                 eig[k][n] = float(reig)
                 for i in range(atoms):
                     #read eigenvectors
-                    svec = re.findall('([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx+1+i])
+                    svec = re.findall(r'([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx+1+i])
                     z = list(map(float,svec))
                     cvec = [complex(z[0],z[1]),complex(z[2],z[3]),complex(z[4],z[5])]
                     vec[k][n][i] = np.array(cvec, dtype=complex)

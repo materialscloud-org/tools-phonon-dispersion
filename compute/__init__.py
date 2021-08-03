@@ -26,7 +26,7 @@ template_folder = os.path.join(directory, 'templates/user_templates')
 
 try:
     with open(config_file_path) as config_file:
-        config = yaml.load(config_file)
+        config = yaml.load(config_file, Loader=yaml.SafeLoader)
         data_folder = os.path.join(directory, config["data_folder"])
 except IOError as exc:
     if exc.errno == 2:  # No such file or directory

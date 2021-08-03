@@ -148,7 +148,7 @@ class QePhononQetools(Phonon):
         self.read_atoms(filename)
         
         if scf_output: filename = "%s/%s"%(self.folder,scf_output)
-        else :    raise ValueError("pw.x or ph.x output file not specified")
+        else :    raise ValueError("pw.x output file not specified")
         self.read_alat(filename)
 
         #read modes
@@ -172,7 +172,11 @@ class QePhononQetools(Phonon):
             file_str  = "".join(file_list)
 
         #determine the numer of atoms
-        nphons = max([int(x) for x in re.findall( '(?:freq|omega) \((.+)\)', file_str )])
+        lines_with_freq = [int(x) for x in re.findall(r'(?:freq|omega) \((.+)\)', file_str )]
+        if not lines_with_freq:
+            raise ValueError("Unable to find the lines with the frequencies in the matdyn.modes file. "
+            "Please check that you uploaded the correct file!")
+        nphons = max(lines_with_freq)
         atoms = int(nphons/3)
 
         #check if the number fo atoms is the same
@@ -195,11 +199,11 @@ class QePhononQetools(Phonon):
             for n in range(nphons):
                 #read eigenvalues
                 eig_idx = k_idx+2+n*(atoms+1)
-                reig = re.findall('=\s+([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx])[1]
+                reig = re.findall(r'=\s+([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx])[1]
                 eig[k][n] = float(reig)
                 for i in range(atoms):
                     #read eigenvectors
-                    svec = re.findall('([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx+1+i])
+                    svec = re.findall(r'([+-]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)',file_list[eig_idx+1+i])
                     z = list(map(float,svec))
                     cvec = [complex(z[0],z[1]),complex(z[2],z[3]),complex(z[4],z[5])]
                     vec[k][n][i] = np.array(cvec, dtype=complex)

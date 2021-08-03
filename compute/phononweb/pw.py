@@ -7,7 +7,9 @@
 import os
 import re
 from math import sqrt
-from .lattice import *
+import numpy as np
+
+from .lattice import car_red
 
 class PwIn():
     """
@@ -96,7 +98,7 @@ class PwIn():
         #find ATOMIC_SPECIES keyword in file and read next line
         for n,line in enumerate(lines):
             if "ATOMIC_SPECIES" in line:
-                for i in range(int(self.system["ntyp"])):
+                for _ in range(int(self.system["ntyp"])):
                     n+=1
                     atype, mass, psp = lines[n].split()
                     self.atypes[atype] = [mass,psp]
@@ -182,7 +184,7 @@ class PwIn():
             if "ATOMIC_POSITIONS" in line:
                 atomic_pos_type = line
                 self.atomic_pos_type = re.findall('([A-Za-z]+)',line)[-1]
-                for i in range(int(self.system["nat"])):
+                for _ in range(int(self.system["nat"])):
                     n+=1
                     atype, x,y,z = lines[n].split()
                     self.atoms.append([atype,[float(i) for i in (x,y,z)]])
@@ -252,7 +254,7 @@ class PwIn():
                         exit()
 
     def slicefile(self, keyword):
-        lines = re.findall('&%s(?:.?)+\n((?:.+\n)+?)(?:\s+)?\/'%keyword,"".join(self.file_lines),re.MULTILINE)
+        lines = re.findall(r'&%s(?:.?)+\n((?:.+\n)+?)(?:\s+)?\/'%keyword,"".join(self.file_lines),re.MULTILINE)
         return lines
     
     def store(self,group,name):
@@ -260,7 +262,7 @@ class PwIn():
         Save the variables specified in each of the groups on the structure
         """
         for file_slice in self.slicefile(name):
-            for keyword, value in re.findall('([a-zA-Z_0-9_\(\)]+)(?:\s+)?=(?:\s+)?([a-zA-Z/\'"0-9_.-]+)',file_slice):
+            for keyword, value in re.findall(r'([a-zA-Z_0-9_\(\)]+)(?:\s+)?=(?:\s+)?([a-zA-Z/\'"0-9_.-]+)',file_slice):
                 group[keyword.strip()]=value.strip()
 
     def stringify_group(self, keyword, group):
