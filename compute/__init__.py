@@ -7,7 +7,12 @@ from flask import Blueprint
 from flask import Markup
 from werkzeug.utils import secure_filename
 
-from compute.phononweb.qephonon_qetools import QePhononQetools
+try:
+    from compute.phononweb.qephonon_qetools import QePhononQetools
+except Exception:
+    import traceback
+    traceback.print_exc()
+
 
 import qe_tools # mostly to get its version
 from tools_barebone import __version__ as tools_barebone_version
@@ -63,28 +68,17 @@ def show_terms_of_use():
 @blueprint.route('/process_structure/', methods=['GET', 'POST'])
 def process_structure():
     if flask.request.method == 'POST':
+        custom_json_file = flask.request.files['custom_json_file']
+        qe_input_file = flask.request.files["qe_input_file"]
+        qe_output_file = flask.request.files["qe_output_file"]
+        qe_modes_file = flask.request.files["qe_modes_file"]
 
-        custom_file = None
-        qe_scf_file = None
-        qe_output_file = None
-        qe_modes_file = None
-
-        if "custom_json_file" in flask.request.files:
-            custom_file = flask.request.files['custom_json_file']
-
-        if "qe_scf_file" in flask.request.files:
-            qe_scf_file = flask.request.files["qe_scf_file"]
-
-        if "qe_output_file" in flask.request.files:
-            qe_output_file = flask.request.files["qe_output_file"]
-
-        if "qe_modes_file" in flask.request.files:
-            qe_modes_file = flask.request.files["qe_modes_file"]
+        file_format = flask.request.form.get('file_format')
 
         # CASE 1: check if custom json file is uploaded
-        if custom_file:
-            filename = custom_file.filename
-            filecontent = custom_file.read().decode('utf8')
+        if file_format == "custom_json_file":
+            filename = custom_json_file.filename
+            filecontent = custom_json_file.read().decode('utf8')
             if filecontent:
                 try:
                     jsondata = json.loads(filecontent)
@@ -96,29 +90,37 @@ def process_structure():
                 flask.flash("Uploaded file is empty.")
 
         # CASE 2: QE input
-        elif qe_scf_file and qe_output_file and qe_modes_file:
+        elif file_format == "qe_files":
+            qe_input = qe_input_file.read().decode('utf8', errors='replace')
+            qe_output = qe_output_file.read().decode('utf8', errors='replace')
+            qe_modes = qe_modes_file.read().decode('utf8', errors='replace')
 
-            qe_scf_filename = secure_filename(qe_scf_file.filename)
-            qe_scf_file.save(os.path.join(tmp_folder, qe_scf_filename))
+            if not qe_input:
+                flask.flash("You didn't specify a QE input file")
+                return flask.redirect(flask.url_for('input_data'))
+            if not qe_output:
+                flask.flash("You didn't specify a QE output file")
+                return flask.redirect(flask.url_for('input_data'))
+            if not qe_modes:
+                flask.flash("You didn't specify a QE matdyn.modes file")
+                return flask.redirect(flask.url_for('input_data'))
 
-            qe_output_filename = secure_filename(qe_output_file.filename)
-            qe_output_file.save(os.path.join(tmp_folder, qe_output_filename))
-
-            qe_modes_filename = secure_filename(qe_modes_file.filename)
-            qe_modes_file.save(os.path.join(tmp_folder, qe_modes_filename))
+            page_title = "{} + {} + {}".format(
+                qe_input_file.filename,
+                qe_output_file.filename,
+                qe_modes_file.filename)
 
             try:
-                tmpdata = QePhononQetools("PW", "qe_test", folder=tmp_folder, scf=qe_scf_filename, scf_output=qe_output_filename, modes=qe_modes_filename).get_json()
-                jsondata =json.loads(tmpdata)
+                jsondata = json.loads(QePhononQetools(scf_input=qe_input, scf_output=qe_output, matdyn_modes=qe_modes).get_json())
                 if jsondata:
-                    return flask.render_template("user_templates/visualizer.html", structure="",
-                                                 page_title=qe_scf_filename + " & " + qe_output_filename + " & " + qe_modes_filename, jsondata=jsondata, **get_version_info())
+                    return flask.render_template("user_templates/visualizer.html",
+                        page_title=page_title, jsondata=jsondata, **get_version_info())
                 else:
-                    flask.flash("Error in processing uploaded QE input files.")
+                    flask.flash("Error in processing uploaded Quantum ESPRESSO input files.")
             except Exception as e:
-                flask.flash("Error in processing uploaded QE input files. Error: " + str(e))
+                flask.flash("Error in processing uploaded Quantum ESPRESSO input files. Error: " + str(e))
         else:
-            flask.flash("Check if all required file(s) are uploaded.")
+            flask.flash("Unknown file format specified")
 
         return flask.redirect(flask.url_for('input_data'))
     else:
@@ -128,19 +130,19 @@ def process_structure():
 @blueprint.route('/process_example_structure/', methods=['GET', 'POST'])
 def process_structure_example():
     if flask.request.method == 'POST':
-        examplestructure = flask.request.form.get('examplestructure', '<none>')
+        example_structure = flask.request.form.get('example_structure', 'No structure selected')
         try:
             if config:
-                page_title = config["data"][examplestructure]["title"]
+                page_title = config["data"][example_structure]["title"]
                 if data_folder:
-                    filename = config["data"][examplestructure]["filename"]
+                    filename = config["data"][example_structure]["filename"]
                     filepath = os.path.join(directory, data_folder, filename)
                     jsondata = {}
                     with open(filepath) as structurefile:
                         jsondata = json.load(structurefile)
 
                     return flask.render_template("user_templates/visualizer.html",
-                        structure=examplestructure, page_title=Markup(page_title), jsondata=jsondata, **get_version_info())
+                        page_title=Markup(page_title), jsondata=jsondata, **get_version_info())
                 else:
                     raise FlaskRedirectException("data_folder path is missing in config file.")
             else:
