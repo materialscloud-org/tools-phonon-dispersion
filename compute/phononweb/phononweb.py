@@ -157,7 +157,7 @@ class Phonon():
                                  "Found %d high symmetry qpoints but %d labels"%(nhiqpts,nlabels))
         else:
             print("The labels of the high symmetry k-points are not known. "
-                  "They can be changed in the .json file manualy.") 
+                  "They can be changed in the .json file manually.") 
         return self.highsym_qpts
 
     def get_json(self, prefix=None):

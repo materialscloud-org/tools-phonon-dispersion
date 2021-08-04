@@ -167,7 +167,7 @@
                     </div>
 
                     {% if 'alat' in jsondata and jsondata.alat is not none %}<h4>Parsed a<sub>lat</sub> from Quantum ESPRESSO: <span style="color: black;"><span>{{jsondata.alat}}</span> Å</span></h4>
-                    <p>Note: This value is parsed from the output file you provided. No check have been performed to validate that the input file and the output file you provided are from the same run. Please double check yourself!</p>{% endif %}
+                    <p>Note: This value is parsed from the output file you provided. Please always double check that the input file and the output file you provided are from the same run, or you might get phase errors!</p>{% endif %}
                 </div>
             </div>
         </div>

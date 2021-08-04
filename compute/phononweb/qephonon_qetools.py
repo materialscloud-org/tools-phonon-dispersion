@@ -25,7 +25,7 @@ class QePhononQetools(Phonon):
 
         #read atoms
         self.read_atoms(io.StringIO(scf_input))
-        # read alat (from output)
+        # read output (mostly to get alat, but also some additional checks)
         self.read_alat(io.StringIO(scf_output))
         #read modes
         self.read_modes(io.StringIO(matdyn_modes))
@@ -48,12 +48,14 @@ class QePhononQetools(Phonon):
             raise ValueError("Unable to find the lines with the frequencies in the matdyn.modes file. "
             "Please check that you uploaded the correct file!")
         nphons = max(lines_with_freq)
-        atoms = int(nphons/3)
+        atoms = nphons // 3
 
         #check if the number fo atoms is the same
         if atoms != self.natoms:
-            print("The number of atoms in the <>.scf file is not the same as in the <>.modes file")
-            exit(1)
+            raise ValueError("The number of atoms in the SCF input file ({}) "
+                "is not the same as in the matdyn.modes file ({})".format(
+                    self.natoms, atoms
+                ))
 
         #determine the number of qpoints
         self.nqpoints = len( re.findall('q = ', file_str ) )
@@ -138,8 +140,13 @@ class QePhononQetools(Phonon):
         the crystal structure in the input (ibrav=0 uses the length of the first vector, but this behavior
         changes between 5.0 and 6.0 in QE, or it's manually specified).
         Better to parse it from the output.
+
+        Moreover, it will perform some simple checks (number of atoms, etc.).
+        Call this *after* read_atoms().
         """
-        matching_lines = [l for l in fileobject.readlines() if 'lattice parameter (alat)' in l and 'a.u.' in l]
+        lines = fileobject.readlines()
+        # Get alat
+        matching_lines = [l for l in lines if 'lattice parameter (alat)' in l and 'a.u.' in l]
         if not matching_lines:
             raise ValueError("No lines with alat found in QE output file")
         if len(matching_lines) > 1:
@@ -148,3 +155,52 @@ class QePhononQetools(Phonon):
         alat_bohr = float(alat_line.split()[4])
         # Convert to angstrom from Bohr (a.u.)
         self.alat = alat_bohr * bohr_in_angstrom
+
+        ## Add a few validation tests here. They are not complete, but at least
+        ## should cover the most common errors.
+
+        # Validate number of atoms
+        matching_lines = [l for l in lines if 'number of atoms/cell' in l]
+        if not matching_lines:
+            raise ValueError("No lines with the number of atoms found in QE output file")
+        # Pick the first one
+        alat_line = matching_lines[0]
+        natoms = int(alat_line.split('=')[1])
+        if self.natoms != natoms:
+            raise ValueError("The number of atoms in the SCF input file ({}) "
+                "is not the same as in the output file ({})".format(
+                    self.natoms, natoms
+                ))
+
+        for lineno, l in enumerate(lines):
+            if "crystal axes" in l and "units of alat" in l:
+                break
+        else:
+            raise ValueError("Unable to find the crystal cell in the QE output file")
+        cell = []
+        for line_offset in [1, 2, 3]:
+            l = lines[lineno+line_offset]
+            if 'a({})'.format(line_offset) not in l:
+                raise ValueError("string 'a({})' not found when parsing cell from QE output".format(
+                    line_offset
+                ))
+            # Lines have this format
+            #    a(1) = (   1.000000   0.000000   0.000000 )  
+            #    a(2) = (   0.000000  -0.823428   0.000000 )  
+            #    a(3) = (   0.000000   0.000000  -0.135089 ) 
+            try:
+                cell.append([float(val) for val in l.split('(')[2].split(')')[0].split()])
+            except Exception as exc:
+                raise ValueError("Error while parsing cell from QE output: {}".format(exc))
+        # Convert from units of alat to angstrom
+        cell = np.array(cell) * self.alat
+        
+        # Check the cells are the same with some loose threshold
+        if not np.allclose(self.cell, cell, rtol=1.e-4, atol=1.e-4):
+            raise ValueError("The cell in the SCF input file ({}) "
+                "is not the same as in the output file ({})".format(
+                    self.cell.tolist(), cell.tolist()
+                ))
+
+        
+        
