@@ -4,11 +4,9 @@
 # This file is part of the phononwebsite project
 #
 """ Generic class to hold and manipulate phonon dispersion data """
-import os
 import json
 import numpy as np
-from collections import Counter
-from .units import *
+from .units import chemical_symbols
 from .lattice import rec_lat, red_car
 from .jsonencoder import JsonEncoder
 
@@ -44,6 +42,21 @@ class Phonon:
 
     def __init__(self):
         """Set to None all variables that need to be set by some of the methods or in a subclass."""
+        self.natoms = None
+        self.atom_numbers = []
+        self.atom_types = []
+        self.chemical_formula = None
+        self.cell = []
+        self.nphons = None
+        self.nqpoints = None
+        self.labels_qpts = None
+        self.qpoints = []
+        self.pos = []
+        self.eigenvalues = None
+        self.eigenvectors = None
+        self.name = None
+        self.chemical_symbols = None
+        self.reps = None
 
     def reorder_eigenvalues(self):
         """
@@ -130,7 +143,7 @@ class Phonon:
 
         def collinear(a, b, c):
             """
-            checkkk if three points are collinear
+            Check if three points are collinear.
             """
             d = [[a[0], a[1], 1], [b[0], b[1], 1], [c[0], c[1], 1]]
             return np.isclose(np.linalg.det(d), 0, atol=1e-5)
@@ -166,12 +179,10 @@ class Phonon:
             )
         return self.highsym_qpts
 
-    def get_json(self, prefix=None):
+    def get_json(self):
         """
         Return json data to be read by javascript
         """
-        name = self.name
-
         if self.highsym_qpts is None:
             self.get_highsym_qpts()
 
@@ -209,7 +220,7 @@ class Phonon:
             atom_typ_string = ("%12.8lf " * 3) % tuple(self.pos[a])
             text += atom_pos_string + atom_typ_string + "\n"
         text += "atypes:\n"
-        for cs, an in zip(self.chemical_symbols, self.atomic_numbers):
+        for cs, an in zip(self.chemical_symbols, self.atom_numbers):
             text += "%3s %d\n" % (cs, an)
         text += "chemical formula:\n"
         text += self.chemical_formula + "\n"

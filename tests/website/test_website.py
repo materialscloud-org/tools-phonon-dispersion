@@ -1,12 +1,12 @@
-import json
+# import json
 import os
 
 import pytest
 
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from urllib.parse import urlparse
+# from selenium.webdriver.support.ui import Select
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.common.keys import Keys
+# from urllib.parse import urlparse
 
 # Note: you need to build docker and start it with
 # ./admin-tools/build-and-run.sh

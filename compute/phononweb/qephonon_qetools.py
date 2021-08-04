@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Giovanni Pizzi
+# Copyright (c) 2019-2021, Giovanni Pizzi
 # All rights reserved.
 
 """ Read phonon dispersion from quantum espresso """
@@ -17,7 +17,7 @@ class QePhononQetools(Phonon):
     Class to read phonons from Quantum ESPRESSO.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self, scf_input, scf_output, matdyn_modes, highsym_qpts=None, reorder=True
     ):
         self.name = "PW"
@@ -38,7 +38,7 @@ class QePhononQetools(Phonon):
         self.get_distances_qpts()
         self.labels_qpts = None
 
-    def read_modes(self, fileobject):
+    def read_modes(self, fileobject):  # pylint: disable=too-many-locals
         """
         Function to read the eigenvalues and eigenvectors from Quantum ESPRESSO
         """
@@ -195,15 +195,16 @@ class QePhononQetools(Phonon):
                 "is not the same as in the output file ({})".format(self.natoms, natoms)
             )
 
-        for lineno, l in enumerate(lines):
-            if "crystal axes" in l and "units of alat" in l:
+        lineno = None
+        for lineno, line in enumerate(lines):
+            if "crystal axes" in line and "units of alat" in line:
                 break
         else:
             raise ValueError("Unable to find the crystal cell in the QE output file")
         cell = []
         for line_offset in [1, 2, 3]:
-            l = lines[lineno + line_offset]
-            if "a({})".format(line_offset) not in l:
+            line = lines[lineno + line_offset]
+            if "a({})".format(line_offset) not in line:
                 raise ValueError(
                     "string 'a({})' not found when parsing cell from QE output".format(
                         line_offset
@@ -215,7 +216,7 @@ class QePhononQetools(Phonon):
             #    a(3) = (   0.000000   0.000000  -0.135089 )
             try:
                 cell.append(
-                    [float(val) for val in l.split("(")[2].split(")")[0].split()]
+                    [float(val) for val in line.split("(")[2].split(")")[0].split()]
                 )
             except Exception as exc:
                 raise ValueError(

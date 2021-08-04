@@ -4,15 +4,15 @@ repos:
   hooks:
   - id: black
 
-#- repo: local
-#  hooks:
-#  - id: prospector
-#    language: system
-#    types: [file, python]
-#    name: prospector
-#    description: "This hook runs Prospector: https://github.com/landscapeio/prospector"
-#    entry: prospector
-#    exclude: &exclude_files >
-#        (?x)^(
-#            static-example-no-barebone/.*|
-#        )$
+- repo: local
+  hooks:
+  - id: prospector
+    language: system
+    types: [file, python]
+    name: prospector
+    description: "This hook runs Prospector: https://github.com/landscapeio/prospector"
+    entry: prospector
+    #exclude: &exclude_files >
+    #    (?x)^(
+    #        static-example-no-barebone/.*|
+    #    )$

@@ -5,7 +5,6 @@ import json
 import flask
 from flask import Blueprint
 from flask import Markup
-from werkzeug.utils import secure_filename
 
 try:
     from compute.phononweb.qephonon_qetools import QePhononQetools
@@ -51,24 +50,26 @@ def get_version_info():
 
 
 class FlaskRedirectException(Exception):
-    pass
+    """Custom exception used for redirect errors."""
 
 
 @blueprint.route("/input_help/", methods=["GET"])
 def show_custom_json_format():
+    """Endpoint to display the help on the input format."""
     return flask.send_from_directory(template_folder, "input_help_text.html")
 
 
 @blueprint.route("/terms_of_use/", methods=["GET"])
 def show_terms_of_use():
     """
-    View for the terms of use
+    View for the terms of use.
     """
     return flask.send_from_directory(template_folder, "terms_of_use.html")
 
 
 @blueprint.route("/process_structure/", methods=["GET", "POST"])
 def process_structure():
+    """Endpoint to process a structure provided by the user."""
     if flask.request.method == "POST":
         custom_json_file = flask.request.files["custom_json_file"]
         qe_input_file = flask.request.files["qe_input_file"]
@@ -132,10 +133,9 @@ def process_structure():
                         jsondata=jsondata,
                         **get_version_info()
                     )
-                else:
-                    flask.flash(
-                        "Error in processing uploaded Quantum ESPRESSO input files."
-                    )
+                flask.flash(
+                    "Error in processing uploaded Quantum ESPRESSO input files."
+                )
             except Exception as e:
                 flask.flash(
                     "Error in processing uploaded Quantum ESPRESSO input files. Error: "
@@ -145,12 +145,12 @@ def process_structure():
             flask.flash("Unknown file format specified")
 
         return flask.redirect(flask.url_for("input_data"))
-    else:
-        return flask.redirect(flask.url_for("input_data"))
+    return flask.redirect(flask.url_for("input_data"))
 
 
 @blueprint.route("/process_example_structure/", methods=["GET", "POST"])
 def process_structure_example():
+    """Endpoint to show an example."""
     if flask.request.method == "POST":
         example_structure = flask.request.form.get(
             "example_structure", "No structure selected"
@@ -171,14 +171,12 @@ def process_structure_example():
                         jsondata=jsondata,
                         **get_version_info()
                     )
-                else:
-                    raise FlaskRedirectException(
-                        "data_folder path is missing in config file."
-                    )
-            else:
-                raise FlaskRedirectException("Config file is missing.")
+                raise FlaskRedirectException(
+                    "data_folder path is missing in config file."
+                )
+            raise FlaskRedirectException("Config file is missing.")
         except FlaskRedirectException as e:
             flask.flash(str(e))
             return flask.redirect(flask.url_for("input_data"))
-    else:
-        return flask.redirect(flask.url_for("input_data"))
+    # GET request
+    return flask.redirect(flask.url_for("input_data"))
