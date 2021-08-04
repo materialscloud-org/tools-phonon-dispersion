@@ -26,7 +26,6 @@ logger = logging.getLogger('tools-app')
 directory = os.path.abspath(os.path.split(os.path.realpath(__file__))[0] + "/../")
 static_folder = os.path.join(directory, "static")
 config_file_path = os.path.join(static_folder, "config.yaml")
-tmp_folder = os.path.join(directory, "compute/tmp")
 template_folder = os.path.join(directory, 'templates/user_templates')
 
 try:
