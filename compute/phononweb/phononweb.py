@@ -179,10 +179,13 @@ class Phonon:
             )
         return self.highsym_qpts
 
+    def get_dict(self):
+        "Return the data as a python dictionary."
+        # Note: we go via the JSON so the numpy arrays are encoded as lists.
+        return json.loads(self.get_json())
+
     def get_json(self):
-        """
-        Return json data to be read by javascript
-        """
+        "Return json data to be read by javascript, as a string."
         if self.highsym_qpts is None:
             self.get_highsym_qpts()
 

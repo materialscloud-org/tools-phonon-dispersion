@@ -85,17 +85,33 @@ def process_structure():
             if filecontent:
                 try:
                     jsondata = json.loads(filecontent)
+                    assert isinstance(
+                        jsondata, dict
+                    ), "The JSON file should contain a dictionary"
+                    # Check that there are a few of the important keys
+                    assert all(
+                        key in jsondata
+                        for key in [
+                            "atom_numbers",
+                            "atom_pos_car",
+                            "atom_types",
+                            "eigenvalues",
+                            "natoms",
+                            "qpoints",
+                            "vectors",
+                        ]
+                    ), "The JSON file does not have some of the required keys"
                     return flask.render_template(
                         "user_templates/visualizer.html",
-                        structure=filename,
-                        page_title=Markup(filename),
+                        structure=jsondata.get("name", filename),
+                        page_title=Markup(jsondata.get("name", filename)),
                         jsondata=jsondata,
                         **get_version_info()
                     )
-                except ValueError as e:
+                except (ValueError, AssertionError) as exc:
                     flask.flash(
                         "Uploaded file is not having correct JSON format. Error: "
-                        + str(e)
+                        + str(exc)
                     )
             else:
                 flask.flash("Uploaded file is empty.")
@@ -121,11 +137,10 @@ def process_structure():
             )
 
             try:
-                jsondata = json.loads(
-                    QePhononQetools(
-                        scf_input=qe_input, scf_output=qe_output, matdyn_modes=qe_modes
-                    ).get_json()
-                )
+                # This should be a dict, not a JSON string
+                jsondata = QePhononQetools(
+                    scf_input=qe_input, scf_output=qe_output, matdyn_modes=qe_modes
+                ).get_dict()
                 if jsondata:
                     return flask.render_template(
                         "user_templates/visualizer.html",
@@ -134,7 +149,7 @@ def process_structure():
                         **get_version_info()
                     )
                 flask.flash(
-                    "Error in processing uploaded Quantum ESPRESSO input files."
+                    "Error in processing uploaded Quantum ESPRESSO input files, no data parsed."
                 )
             except Exception as e:
                 flask.flash(

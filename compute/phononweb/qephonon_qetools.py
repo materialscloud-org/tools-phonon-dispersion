@@ -9,7 +9,7 @@ import numpy as np
 from tools_barebone.structure_importers import get_structure_tuple
 from .phononweb import Phonon
 from .lattice import car_red, rec_lat
-from .units import atomic_numbers, bohr_in_angstrom
+from .units import atomic_numbers, bohr_in_angstrom, chemical_symbols
 
 
 class QePhononQetools(Phonon):
@@ -18,13 +18,21 @@ class QePhononQetools(Phonon):
     """
 
     def __init__(  # pylint: disable=too-many-arguments
-        self, scf_input, scf_output, matdyn_modes, highsym_qpts=None, reorder=True
+        self,
+        scf_input,
+        scf_output,
+        matdyn_modes,
+        highsym_qpts=None,
+        reorder=True,
+        name="PW",
+        starting_reps=(3, 3, 3),
     ):
-        self.name = "PW"
+        super().__init__()
+        self.name = name
         self.highsym_qpts = highsym_qpts
 
         # PBC repetitions used as a starting value in the visualizer
-        self.reps = (3, 3, 3)
+        self.reps = starting_reps
 
         # read atoms
         self.read_atoms(io.StringIO(scf_input))
@@ -149,6 +157,7 @@ class QePhononQetools(Phonon):
 
         self.atom_types = atom_names  # atom type for each atom (string)
 
+        self.chemical_symbols = [chemical_symbols[number] for number in numbers]
         self.chemical_formula = self.get_chemical_formula()
 
     def read_alat(self, fileobject):
@@ -171,7 +180,9 @@ class QePhononQetools(Phonon):
         if not matching_lines:
             raise ValueError("No lines with alat found in QE output file")
         if len(matching_lines) > 1:
-            raise ValueError("Multiple lines with alat found in QE output file...")
+            raise ValueError(
+                "Multiple lines with alat found in QE output file... Maybe this is a vc-relax and not an SCF?"
+            )
         alat_line = matching_lines[0]
         alat_bohr = float(alat_line.split()[4])
         # Convert to angstrom from Bohr (a.u.)
