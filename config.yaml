@@ -12,7 +12,7 @@ page_title: "Interactive phonon visualizer"
 #  process_data:
 #    - custom.js
 
-about_section_title: "About Interactive phonon visualizer"
+about_section_title: "About the interactive phonon visualizer"
 
 templates:
   how_to_cite: null
