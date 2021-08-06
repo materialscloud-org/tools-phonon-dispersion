@@ -28,30 +28,27 @@ additional_accordion_entries:
 data_folder: "user_static/data/"
 
 data:
-#  Bi2:
-#    title: "Bi<sub>2</sub>"
-#    filename: Bi2.json
-#  BN:
-#    title: "BN"
-#    filename: BN.json
-#  CoH2O2:
-#    title: "CoH<sub>2</sub>O<sub>2</sub>"
-#    filename: CoH2O2.json
-  graphene:
+  Bi:
+    title: "Bi</sub>"
+    filename: Bi.json
+  BN:
+    title: "BN"
+    filename: BN.json
+  C:
     title: "Graphene"
-    filename: graphene.json
-#  I2Pb:
-#    title: "I<sub>2</sub>Pb"
-#    filename: I2Pb.json
-#  MoS2:
-#    title: "MoS<sub>2</sub>"
-#    filename: MoS2.json
-#  P4:
-#    title: "P<sub>4</sub>"
-#    filename: P4.json
-#  PbTe:
-#    title: "PbTe"
-#    filename: PbTe.json
+    filename: C.json
+  PbI2:
+    title: "PbI<sub>2</sub>"
+    filename: PbI2.json
+  MoS2-MoS2:
+    title: "MoS<sub>2</sub>"
+    filename: MoS2-MoS2.json
+  P:
+    title: "P"
+    filename: P.json
+  PbTe:
+    title: "PbTe"
+    filename: PbTe.json
   BaTiO_3:
     title: "BaTiO<sub>3</sub>"
     filename: BaTiO_3.json
