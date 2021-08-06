@@ -12,16 +12,11 @@
   verbosity = 'high'
 /
 &SYSTEM
-  degauss =   2.0000000000d-02
-  do_cutoff_2d = .true.
   ecutrho =   4.4000000000d+02
   ecutwfc =   5.5000000000d+01
   ibrav = 0
   nat = 4
   ntyp = 3
-  occupations = 'smearing'
-  smearing = 'cold'
-  use_all_frac = .false.
 /
 &ELECTRONS
   conv_thr =   8.0000000000d-10
