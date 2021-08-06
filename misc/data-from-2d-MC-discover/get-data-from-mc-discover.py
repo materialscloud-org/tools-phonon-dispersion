@@ -33,8 +33,15 @@ def prettify_formula(formula, prototype):
         ret_string += f" [{_prettify_string(prototype)}]"
     return ret_string
 
+
 def check_matdyn():
-    process = subprocess.run([MATDYN_EXECUTABLE], input="", check=False, capture_output=True, encoding="ascii")
+    process = subprocess.run(
+        [MATDYN_EXECUTABLE],
+        input="",
+        check=False,
+        capture_output=True,
+        encoding="ascii",
+    )
     # matdyn.x could create a CRASH file
     try:
         os.remove("CRASH")
@@ -62,7 +69,9 @@ def check_matdyn():
     ], f"Version '{version}' not supported, if you know it works add it to the list of supported versions"
 
 
-def get_files_from_materials_cloud(discover_data, compound):  # pylint: disable=too-many-locals
+def get_files_from_materials_cloud(
+    discover_data, compound
+):  # pylint: disable=too-many-locals
     """Given a compound name, return the content of some relevant files (as a dictionary)."""
     compounds = discover_data["data"]["compounds"]
     material = compounds[compound]
@@ -99,7 +108,9 @@ def get_files_from_materials_cloud(discover_data, compound):  # pylint: disable=
         scf_pw_uuid
     )
     scf_input_file = urllib.request.urlopen(api_content_url).read()
-    assert b"calculation = 'scf'" in scf_input_file, f"The parent calculation does not seem to be a SCF for '{compound}', UUID={scf_pw_uuid}"
+    assert (
+        b"calculation = 'scf'" in scf_input_file
+    ), f"The parent calculation does not seem to be a SCF for '{compound}', UUID={scf_pw_uuid}"
 
     api_outputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/outgoing".format(
         bands_pw_uuid
@@ -233,14 +244,15 @@ if __name__ == "__main__":
                     f"> Skipping '{compound}' as destination folder '{dest_folder}' exists."
                 )
                 continue
-            else:
-                print(f"ERROR: Stopping: folder '{dest_folder}' exists but ther is no JSON inside. Remove it to regenerate it.")
-                sys.exit(1)
+            print(
+                f"ERROR: Stopping: folder '{dest_folder}' exists but ther is no JSON inside. Remove it to regenerate it."
+            )
+            sys.exit(1)
 
         compound_info = get_files_from_materials_cloud(discover_data, compound)
 
         # I write the content to files
-        for filename, content in compound_info['files'].items():
+        for filename, content in compound_info["files"].items():
             with open(os.path.join(dest_folder, filename), "wb") as fhandle:
                 fhandle.write(content)
         print(f"Files written to folder '{dest_folder}'")
@@ -248,7 +260,12 @@ if __name__ == "__main__":
         current_dir = os.path.realpath(os.curdir)
         try:
             os.chdir(dest_folder)
-            process = subprocess.run([MATDYN_EXECUTABLE, "-in", "matdyn.in"], check=False, capture_output=True, encoding="ascii")
+            process = subprocess.run(
+                [MATDYN_EXECUTABLE, "-in", "matdyn.in"],
+                check=False,
+                capture_output=True,
+                encoding="ascii",
+            )
             assert (
                 "JOB DONE." in process.stdout
             ), f"matdyn.x mode did not finish correctly... Ouput:\n{process.stdout}"
@@ -263,21 +280,23 @@ if __name__ == "__main__":
         print("matdyn.x run successfully, matdyn.modes generated.")
 
         phonons = QePhononQetools(
-            scf_input=compound_info["files"]["scf.in"].decode('ascii'),
-            scf_output=compound_info["files"]["scf.out"].decode('ascii'),
+            scf_input=compound_info["files"]["scf.in"].decode("ascii"),
+            scf_output=compound_info["files"]["scf.out"].decode("ascii"),
             matdyn_modes=matdyn_modes,
             highsym_qpts=compound_info["high_symmetry_points"],
             starting_reps=(5, 5, 1),
             reorder=True,
             name=prettify_formula(
-                formula=discover_data['data']['compounds'][compound]['formula'],
-                prototype=discover_data['data']['compounds'][compound]['prototype']
+                formula=discover_data["data"]["compounds"][compound]["formula"],
+                prototype=discover_data["data"]["compounds"][compound]["prototype"],
             ),
         )
 
         # print(phonons)
 
-        json_fname = os.path.realpath(os.path.join(dest_folder, os.pardir, "{}.json".format(compound)))
+        json_fname = os.path.realpath(
+            os.path.join(dest_folder, os.pardir, "{}.json".format(compound))
+        )
         with open(json_fname, "w") as fhandle:
             data = phonons.get_dict()
             # Remove alat if defined (so there is no message about Quantum ESPRESSO when the JSON file is loaded)
