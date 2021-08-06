@@ -136,7 +136,7 @@ def get_files_from_materials_cloud(
 
     matdyn_input_file = """&INPUT
   asr = 'simple'
-  !do_cutoff_2d = .true.
+  loto_2d = .true.
   fldos = ''
   flfrc = 'real_space_force_constants.dat'
   flfrq = ''
