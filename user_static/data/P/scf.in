@@ -1,0 +1,37 @@
+&CONTROL
+  calculation = 'scf'
+  max_seconds = 1746
+  outdir = './out/'
+  prefix = 'aiida'
+  pseudo_dir = './pseudo/'
+  restart_mode = 'from_scratch'
+  verbosity = 'high'
+/
+&SYSTEM
+  degauss =   2.0000000000d-02
+  do_cutoff_2d = .true.
+  ecutrho =   2.4000000000d+02
+  ecutwfc =   3.0000000000d+01
+  ibrav = 0
+  nat = 4
+  ntyp = 1
+  occupations = 'smearing'
+  smearing = 'cold'
+/
+&ELECTRONS
+  conv_thr =   8.0000000000d-11
+  electron_maxstep = 100
+/
+ATOMIC_SPECIES
+P      30.97376 P.pbe-n-rrkjus_psl.1.0.0.UPF
+ATOMIC_POSITIONS angstrom
+P            1.6527328495       4.2063485919      10.0365591106 
+P            1.6527328495       0.4079940780      12.1467512626 
+P            3.3054656990       2.7151651565      10.0365591059 
+P            3.3054656990       1.8991775134      12.1467512674 
+K_POINTS automatic
+10 8 1 0 0 0
+CELL_PARAMETERS angstrom
+      3.3054656990       0.0000000000       0.0000000000
+      0.0000000000       4.6143426699       0.0000000000
+      0.0000000000       0.0000000000      22.1833103733

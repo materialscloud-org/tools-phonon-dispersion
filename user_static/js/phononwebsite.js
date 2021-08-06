@@ -1139,6 +1139,8 @@
             this.atomobjects = [];
             this.bondobjects = [];
             this.bonds = [];
+
+            this.is_animated = false;
         }
 
         //functions to link the DOM buttons with this class
@@ -1555,6 +1557,7 @@
             }
 
             this.updatelocal();
+            this.animate();
         }
 
         updatelocal() {
@@ -1563,7 +1566,6 @@
             this.getAtypes(this.phonon.atom_numbers);
             this.addStructure(this.atoms,this.phonon.atom_numbers);
             this.addCell(this.phonon.lat);
-            this.animate();
         }
 
         getContainerDimensions() {
@@ -1598,12 +1600,20 @@
         }
 
         animate() {
-            setTimeout( function() {
-                requestAnimationFrame( this.animate.bind(this) );
-            }.bind(this), 1000 / 60 );
+            if (!this.is_animated) {
+                // To avoid that, if this function is called more than once,
+                // e.g. on a click on the phonon bands, there are multiple loops running, increasing the FPS
+                this.is_animated = true;
+                this.animate_internal();
+            }    
+        }
 
+        animate_internal() {
+            setTimeout( function() {
+                let id = requestAnimationFrame( this.animate_internal.bind(this) );
+            }.bind(this), 1000 / 30 ); 
             this.controls.update();
-            this.render();
+            this.render();    
         }
 
         render() {

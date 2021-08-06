@@ -1,0 +1,36 @@
+&CONTROL
+  calculation = 'scf'
+  max_seconds = 1746
+  outdir = './out/'
+  prefix = 'aiida'
+  pseudo_dir = './pseudo/'
+  restart_mode = 'from_scratch'
+  verbosity = 'high'
+/
+&SYSTEM
+  degauss =   2.0000000000d-02
+  do_cutoff_2d = .true.
+  ecutrho =   3.2000000000d+02
+  ecutwfc =   4.0000000000d+01
+  ibrav = 0
+  nat = 2
+  ntyp = 2
+  occupations = 'smearing'
+  smearing = 'cold'
+/
+&ELECTRONS
+  conv_thr =   4.0000000000d-11
+  electron_maxstep = 100
+/
+ATOMIC_SPECIES
+Pb     207.2 Pb.pbe-dn-kjpaw_psl.0.2.2.UPF
+Te     127.6 te_pbe_v1.uspp.F.UPF
+ATOMIC_POSITIONS angstrom
+Te           0.0000000000       2.4600718268      11.6801654065 
+Pb           0.0000000000       0.0000000000       9.9338096004 
+K_POINTS automatic
+10 10 1 0 0 0
+CELL_PARAMETERS angstrom
+      4.2609693940       0.0000000000       0.0000000000
+     -2.1304846970       3.6901077400       0.0000000000
+      0.0000000000       0.0000000000      21.6139750069

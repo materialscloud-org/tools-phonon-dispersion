@@ -72,10 +72,28 @@
             </div>
 
             <div>
-                <h5>2. .modes file</h5>
+                <h5>2. SCF pw.x output file</h5>
                 <p>
-                    It is the file produced by the <strong>matdyn.x</strong> code of Quantum ESPRESSO (corresponding to
-                    the flag "flvec") at the end of the process:
+                    The output file of pw.x is used to get the value of
+                    <code>alat</code>, the lattice parameter, as defined by Quantum
+                    ESPRESSO. Unfortunately, its value cannot always be obtained from
+                    the input only (e.g. in the case of <code>ibrav=0</code> it is not
+                    explicitly specified), and the way it is obtained depends on the
+                    version of Quantum ESPRESSO (in 6.x versions it is the length of
+                    the first lattice vector, but it used to be user-defined in earlier
+                    versions).<br>
+
+                    This is essential to perform the correct unit conversions, as
+                    the q-points are written in units of <code>2 * pi / alat</code>
+                    in the <code>matdyn.modes</code> file (see below).
+                </p>
+            </div>
+
+            <div>
+                <h5>3. matdyn.modes file</h5>
+                <p>
+                    It is one of the files produced by the <strong>matdyn.x</strong> code of Quantum ESPRESSO (its name can be changed using the input flag "flvec").
+                    This is obtained at the end of the following "workflow":
                     <br>
                     ph.x on a certain grid => q2r.x to get force constants => matdyn.x to get the phonons on arbitrary grid
                 </p>

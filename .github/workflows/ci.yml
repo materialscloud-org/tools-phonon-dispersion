@@ -1,0 +1,70 @@
+name: Continuous integration
+
+on: [push, pull_request]
+
+jobs:
+  precommit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install python dependencies
+        run: |
+          pip install -r .ci/dev-requirements.txt
+          pip freeze
+
+      - name: Run pre-commit
+        run:
+          pre-commit run --all-files || ( git status --short ; git diff ; exit 1 )
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: nanasess/setup-chromedriver@master
+      #with:
+      #  # Optional: do not specify to match Chrome's version
+      #  chromedriver-version: '88.0.4324.96'
+    - run: |
+        export DISPLAY=:99
+        chromedriver --url-base=/wd/hub &
+        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+
+    - name: Install python dependencies
+      run: |
+        pip install -r .ci/dev-requirements.txt
+        pip freeze
+
+    - name: Install docker
+      run: |
+        sudo apt-get update
+        sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+        sudo apt-get update
+        sudo apt-get install docker-ce
+
+    - name: Run tool container and test it
+      run: |
+        ./admin-tools/build-and-run.sh -n &&  .ci/wait-for-it.sh localhost:8093 -t 120 && sleep 5 && pytest --driver Chrome || (docker exec -it tools-phonon-dispersion cat /var/log/apache2/error.log ; exit 1)
+
+    - name: Archive screenshots (in case of problems) as artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ failure() }}
+      with:
+        name: Screenshots of test failures
+        path: "*.png"

@@ -7,13 +7,14 @@
 import json
 import numpy as np
 
+
 class JsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, (np.ndarray,np.number)):
+    """Custom JSON encoder working correctly also with numpy arrays."""
+
+    def default(self, obj):  # pylint: disable=method-hidden, arguments-differ
+        """Default encoder."""
+        if isinstance(obj, (np.ndarray, np.number)):
             if np.iscomplexobj(obj):
                 return [obj.real, obj.imag]
-            else:
-                return obj.tolist()
-        return(json.JSONEncoder.default(self, obj))
-
-
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
