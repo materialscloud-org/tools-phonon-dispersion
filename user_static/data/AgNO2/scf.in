@@ -1,0 +1,44 @@
+&CONTROL
+  calculation = 'scf'
+  forc_conv_thr =   1.0000000000d-04
+  max_seconds = 1746
+  nstep = 200
+  outdir = './out/'
+  prefix = 'aiida'
+  pseudo_dir = './pseudo/'
+  restart_mode = 'from_scratch'
+  tprnfor = .true.
+  tstress = .true.
+  verbosity = 'high'
+/
+&SYSTEM
+  degauss =   2.0000000000d-02
+  do_cutoff_2d = .true.
+  ecutrho =   4.4000000000d+02
+  ecutwfc =   5.5000000000d+01
+  ibrav = 0
+  nat = 4
+  ntyp = 3
+  occupations = 'smearing'
+  smearing = 'cold'
+  use_all_frac = .false.
+/
+&ELECTRONS
+  conv_thr =   8.0000000000d-10
+  electron_maxstep = 100
+/
+ATOMIC_SPECIES
+Ag     107.868 ag_pbe_v1.4.uspp.F.UPF
+N      14.0067 N.pbe.theos.UPF
+O      15.9994 O_pbe_v1.2.uspp.F.UPF
+ATOMIC_POSITIONS angstrom
+O            1.1793473215       0.3942986212      12.2075409778 
+Ag           2.0640743423       2.6727285178      10.8613158162 
+N            2.0815241218       4.7713799162      11.2008027053 
+O            2.1123671125       0.5918893220      10.2682322471 
+K_POINTS automatic
+10 8 1 0 0 0
+CELL_PARAMETERS angstrom
+      3.3777146426       0.3035328732       0.0000000000
+      0.4574490670       4.9105898921       0.0000000000
+      0.0000000000       0.0000000000      22.1350849950
