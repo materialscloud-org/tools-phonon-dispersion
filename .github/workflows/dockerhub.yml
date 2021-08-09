@@ -49,8 +49,8 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: |
-            materialscloud/${GITHUB_REPOSITORY#*/}:latest
-            materialscloud/${GITHUB_REPOSITORY#*/}:${{ steps.setup.outputs.version }}
+            materialscloud/${{ github.event.repository.name }}:latest
+            materialscloud/${{ github.event.repository.name }}:${{ steps.setup.outputs.version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
