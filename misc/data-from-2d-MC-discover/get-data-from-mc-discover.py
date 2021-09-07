@@ -12,13 +12,20 @@ import urllib.request
 from typing import Optional, Dict, List, Tuple
 
 import numpy as np
+from tqdm import tqdm
 
 sys.path.append("../..")
 from compute.phononweb.qephonon_qetools import (  # pylint: disable=wrong-import-position
     QePhononQetools,
 )
 
-MATDYN_EXECUTABLE = os.path.expanduser("~/git/q-e/bin/matdyn.x")
+# Adapt to your QE path
+QE_BASE_PATH = os.path.expanduser("~/git/q-e/bin/")
+
+MATDYN_EXECUTABLE = os.path.join(QE_BASE_PATH, "matdyn.x")
+Q2R_EXECUTABLE = os.path.join(QE_BASE_PATH, "q2r.x")
+
+RERUN_Q2R = True
 
 
 class MissingPhononsError(Exception):
@@ -42,9 +49,9 @@ def prettify_formula(formula, prototype):
     return ret_string
 
 
-def check_matdyn():
+def check_qe_exec(executable_path: str, program_name: str):
     process = subprocess.run(
-        [MATDYN_EXECUTABLE],
+        [executable_path],
         input="",
         check=False,
         capture_output=True,
@@ -59,22 +66,36 @@ def check_matdyn():
     header_lines = [
         line.strip()
         for line in process.stdout.splitlines()
-        if line.strip().startswith("Program MATDYN")
+        if line.strip().startswith(f"Program {program_name}")
     ]
     if not header_lines:
         raise AssertionError("Could not find the expected header line in matdyn run...")
     header_line = header_lines[0]
     version = header_line.split()[2]
-    # print("Matdyn version:", version, "NOTE: you need a recent 6.x version to support the 2D cutoff!")
     # For now I just do a stupid check, this would need to be improved.
-    # I am not really sure in which version it the 2D cutoff was implemented - probably
-    # in 6.1, while in 6.0 it's not there. Feel free to add more versions if you know it's working
-    # (or more recent versions)
+    # The 2D cutoff was implemented only in 6.2.1 or later.
+    # Note that an important bug was fixed in v.6.8, however (this requires re-running also q2r.x).
     assert version in [
         "v.6.8",
-        "v.6.7.0",
-        "v.6.7MaX",
     ], f"Version '{version}' not supported, if you know it works add it to the list of supported versions"
+
+
+def check_matdyn():
+    check_qe_exec(executable_path=MATDYN_EXECUTABLE, program_name="MATDYN")
+
+
+def check_q2r():
+    check_qe_exec(executable_path=Q2R_EXECUTABLE, program_name="Q2R")
+
+
+def get_q2r_input_file() -> str:
+    return """&INPUT
+  loto_2d = .true.
+  fildyn = 'DYN_MAT/dynamical-matrix-'
+  flfrc = 'real_space_force_constants.dat'
+  zasr = 'simple'
+/
+"""
 
 
 def get_matdyn_input_file(
@@ -123,7 +144,7 @@ def needs_node(f):
 
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
-        """Print an error and return if there is no node loaded."""
+        """Raise an error if there is no node loaded."""
         if not self.current_uuid:
             raise ValueError("A node must be loaded first with `load_node`")
         return f(self, *args, **kwargs)
@@ -237,8 +258,10 @@ class AiiDARestClient:
         return self._make_request(url)
 
     @needs_node
-    def get_node_repo_list(self) -> List:
+    def get_node_repo_list(self, path: str = "") -> List:
         url = f"{self.node_url}/repo/list"
+        if path:
+            url += f"?filename=%22{urllib.parse.quote(path)}%22"
         return AiiDARestResponse(self._make_request(url)).data["repo_list"]
 
     @needs_node
@@ -283,15 +306,21 @@ class AiiDARestClient:
 
 
 def get_files_from_materials_cloud(
-    discover_data, compound
+    discover_data: Dict, compound: str, rerun_q2r: bool = True
 ):  # pylint: disable=too-many-locals, too-many-statements
     """Given a compound name, return the content of some relevant files (as a dictionary)."""
+    # Will be returned at the end
+    files_dict = {}
+    uuids_dict = {}
+
     compounds = discover_data["data"]["compounds"]
     material = compounds[compound]
     try:
         phonons_uuid = material["phonons_2D"]
     except KeyError:
         raise MissingPhononsError(f"No phonons for {compound}")
+
+    uuids_dict["phonon_bands"] = phonons_uuid
 
     # Create REST client, check that I am pointing to a BandsData
     client = AiiDARestClient(
@@ -315,19 +344,49 @@ def get_files_from_materials_cloud(
     matdyn_input_file, final_high_sym_kpts = get_matdyn_input_file(
         high_symmetry_points, high_symmetry_points_coordinates
     )
+    files_dict["matdyn.in"] = matdyn_input_file.encode("ascii")
 
     # Retrieve phonon bands input (matdyn.x)
     client.load_node(
         client.get_incoming()[0]["uuid"]
     )  # Move to the creator: it's a single one
-    matdyn_uuid = client.current_uuid
+    uuids_dict["matdyn"] = client.current_uuid
 
     # Go to the force constants FolderData
     client.load_node(client.get_incoming_dict()["parent_calc_folder"]["uuid"])
-    force_constants_uuid = client.current_uuid
-    real_force_constants = client.get_node_repo_content(
-        "real_space_force_constants.dat"
-    )
+    if not rerun_q2r:
+        # If I do not want to rerun q2r, then I need to store the force_constants file.
+        # Otherwise, it will be regenerated when running q2r.
+        uuids_dict["force_constants"] = client.current_uuid
+        # I return this as well, but it's up to the caller to decide if we want to rerun q2r as well
+        # or not (in which case, this should be ignored)
+        files_dict["real_space_force_constants.dat"] = client.get_node_repo_content(
+            "real_space_force_constants.dat"
+        )
+
+    if rerun_q2r:
+        current_uuid = client.current_uuid
+        ## For a moment, go up to get the q2r.x inputs
+        # First, I set the q2r.in input file - this is always the same
+        files_dict["q2r.in"] = get_q2r_input_file().encode("ascii")
+        # First, go to the q2r calculation, and then to the parent FolderData
+        client.load_node(
+            client.get_incoming()[0]["uuid"]
+        )  # Move to the creator: it's a single one
+        client.load_node(client.get_incoming_dict()["parent_calc_folder"]["uuid"])
+
+        for obj in client.get_node_repo_list(path="DYN_MAT"):
+            if obj["type"] != "FILE":
+                continue
+            if not obj["name"].startswith("dynamical-matrix-"):
+                continue
+            files_dict[f"DYN_MAT/{obj['name']}"] = client.get_node_repo_content(
+                f"DYN_MAT/{obj['name']}"
+            )
+        uuids_dict["dynamical_matrices"] = client.current_uuid
+
+        # Go back to the force-constants node to continue
+        client.load_node(current_uuid)
 
     ## Retrieve PW inputs and outputs
     # First go to the q2r calculation
@@ -381,24 +440,16 @@ def get_files_from_materials_cloud(
         raise ValueError(
             f"The parent calculation does not seem to be a SCF for '{compound}', UUID={client.current_uuid}"
         )
+    files_dict["scf.in"] = scf_input_file
+    uuids_dict["scf"] = scf_pw_uuid
 
     # Go to the retrieved SCF outputs
     client.load_node(client.get_outgoing_dict()["retrieved"]["uuid"])
-    scf_output_file = client.get_node_repo_content("aiida.out")
+    files_dict["scf.out"] = client.get_node_repo_content("aiida.out")
 
     return {
-        "files": {
-            "scf.in": scf_input_file,
-            "scf.out": scf_output_file,
-            "real_space_force_constants.dat": real_force_constants,
-            "matdyn.in": matdyn_input_file.encode("ascii"),
-        },
-        "uuids": {
-            "scf": scf_pw_uuid,
-            "matdyn": matdyn_uuid,
-            "phonon_bands": phonons_uuid,
-            "force_constants": force_constants_uuid,
-        },
+        "files": files_dict,
+        "uuids": uuids_dict,
         "high_symmetry_points": final_high_sym_kpts,
     }
 
@@ -406,15 +457,16 @@ def get_files_from_materials_cloud(
 if __name__ == "__main__":
 
     check_matdyn()
+    check_q2r()
 
     discover_url = (
         "https://www.materialscloud.org/mcloud/api/v2/discover/2dstructures/compounds"
     )
     discover_data = json.loads(urllib.request.urlopen(discover_url).read())
 
-    # ["AgNO2", "Bi", "BN", "C", "PbI2", "MoS2-MoS2", "P", "PbTe"]:
-    for compound in sorted(discover_data["data"]["compounds"].keys()):
-
+    progress_bar = tqdm(sorted(discover_data["data"]["compounds"].keys()))
+    for compound in progress_bar:
+        progress_bar.set_description(compound)
         # Problematic cases:
         if compound in [
             # MISSING PHONONS
@@ -442,26 +494,51 @@ if __name__ == "__main__":
             os.makedirs(dest_folder, exist_ok=False)
         except FileExistsError:
             if os.path.exists(os.path.join(dest_folder, os.pardir, f"{compound}.json")):
-                print(
+                progress_bar.write(
                     f"> Skipping '{compound}' as destination folder '{dest_folder}' exists."
                 )
                 continue
-            print(
+            progress_bar.write(
                 f"ERROR: Stopping: folder '{dest_folder}' exists but ther is no JSON inside. Remove it to regenerate it."
             )
             sys.exit(1)
 
-        compound_info = get_files_from_materials_cloud(discover_data, compound)
+        compound_info = get_files_from_materials_cloud(
+            discover_data, compound, rerun_q2r=RERUN_Q2R
+        )
 
         # I write the content to files
         for filename, content in compound_info["files"].items():
-            with open(os.path.join(dest_folder, filename), "wb") as fhandle:
+            full_fname = os.path.join(dest_folder, filename)
+            os.makedirs(os.path.dirname(full_fname), exist_ok=True)
+            with open(full_fname, "wb") as fhandle:
                 fhandle.write(content)
         with open(os.path.join(dest_folder, "uuids.json"), "w") as fhandle:
             json.dump(compound_info["uuids"], fhandle)
-        print(f"Files written to folder '{dest_folder}'")
+        progress_bar.write(f"Files written to folder '{dest_folder}'")
 
         current_dir = os.path.realpath(os.curdir)
+        if RERUN_Q2R:
+            try:
+                os.chdir(dest_folder)
+                process = subprocess.run(
+                    [Q2R_EXECUTABLE, "-in", "q2r.in"],
+                    check=False,
+                    capture_output=True,
+                    encoding="ascii",
+                )
+                assert (
+                    "JOB DONE." in process.stdout
+                ), f"q2r.x mode did not finish correctly... Ouput:\n{process.stdout}"
+                assert os.path.exists(
+                    "real_space_force_constants.dat"
+                ), f"q2r.x mode did not generate the real_space_force_constants.dat file... Ouput:\n{process.stdout}"
+            finally:
+                os.chdir(current_dir)
+            progress_bar.write(
+                "q2r.x run successfully, real_space_force_constants.dat generated."
+            )
+
         try:
             os.chdir(dest_folder)
             process = subprocess.run(
@@ -481,7 +558,7 @@ if __name__ == "__main__":
         finally:
             os.chdir(current_dir)
 
-        print("matdyn.x run successfully, matdyn.modes generated.")
+        progress_bar.write("matdyn.x run successfully, matdyn.modes generated.")
 
         phonons = QePhononQetools(
             scf_input=compound_info["files"]["scf.in"].decode("ascii"),
@@ -509,4 +586,4 @@ if __name__ == "__main__":
 
             json.dump(data, fhandle)
 
-        print(f"'{json_fname}' file written.")
+        progress_bar.write(f"'{json_fname}' file written.")
