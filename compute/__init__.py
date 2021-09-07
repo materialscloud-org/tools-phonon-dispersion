@@ -17,7 +17,7 @@ except Exception:
 import qe_tools  # mostly to get its version
 from tools_barebone import __version__ as tools_barebone_version
 
-__version__ = "21.08.1"
+__version__ = "21.08.3"
 
 blueprint = Blueprint("compute", __name__, url_prefix="/compute")
 
