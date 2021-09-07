@@ -1,11 +1,15 @@
 #!/usr/bin/env python
+import functools
 import io
 import json
 import os
 import subprocess
 import sys
 import urllib
+import urllib.parse
 import urllib.request
+
+from typing import Optional, Dict, List, Tuple
 
 import numpy as np
 
@@ -73,78 +77,21 @@ def check_matdyn():
     ], f"Version '{version}' not supported, if you know it works add it to the list of supported versions"
 
 
-def get_files_from_materials_cloud(
-    discover_data, compound
-):  # pylint: disable=too-many-locals, too-many-statements
-    """Given a compound name, return the content of some relevant files (as a dictionary)."""
-    compounds = discover_data["data"]["compounds"]
-    material = compounds[compound]
-    try:
-        phonons_uuid = material["phonons_2D"]
-    except KeyError:
-        raise MissingPhononsError(f"No phonons for {compound}")
-
-    # Retrieve Phonon bands input (matdyn.x)
-
-    ## This allows to list files in the node
-    # api_list_url = 'https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/repo/list'.format(
-    #    phonons_uuid
-    # )
-    # inputs = json.loads(urllib.request.urlopen(api_list_url).read())['data']['repo_list']
-    # print(inputs)
-
-    api_content_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/repo/contents?filename=%22kpoints.npy%22".format(
-        phonons_uuid
-    )
-    bands_kpts_npy = io.BytesIO(urllib.request.urlopen(api_content_url).read())
-    bands_kpts_array = np.load(bands_kpts_npy)
-
-    api_attributes_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}?attributes=true".format(
-        phonons_uuid
-    )
-    attributes = json.loads(urllib.request.urlopen(api_attributes_url).read())["data"][
-        "nodes"
-    ][0]["attributes"]
-    high_symmetry_points = list(zip(attributes["label_numbers"], attributes["labels"]))
-    high_symmetry_points_coordinates = [
-        bands_kpts_array[sym_kpt[0]] for sym_kpt in high_symmetry_points
-    ]
-    # [((0, u'G'), array([ 0.,  0.,  0.])), ((49, u'M'), array([ 0.5,  0. ,  0. ])),
-    #  ((85, u'K'), array([ 0.33333333,  0.33333333,  0.        ])), ((131, u'G'), array([ 0.,  0.,  0.]))]
-
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        phonons_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    matdyn_uuid = inputs[0]["uuid"]  # There is a single creator
-
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        matdyn_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    inputs_dict = {inp["link_label"]: inp["uuid"] for inp in inputs}
-    force_constants_uuid = inputs_dict["parent_calc_folder"]
-
-    api_content_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/repo/contents?filename=%22real_space_force_constants.dat%22".format(
-        force_constants_uuid
-    )
-    real_force_constants = urllib.request.urlopen(api_content_url).read()
-
+def get_matdyn_input_file(
+    high_symmetry_points: List, high_symmetry_points_coordinates: List
+) -> Tuple[str, List]:
     matdyn_input_file = """&INPUT
-  asr = 'simple'
-  loto_2d = .true.
-  fldos = ''
-  flfrc = 'real_space_force_constants.dat'
-  flfrq = ''
-  flvec = 'matdyn.modes'
-  q_in_cryst_coord = .true.
-  q_in_band_form = .true.
+asr = 'simple'
+loto_2d = .true.
+fldos = ''
+flfrc = 'real_space_force_constants.dat'
+flfrq = ''
+flvec = 'matdyn.modes'
+q_in_cryst_coord = .true.
+q_in_band_form = .true.
 /
 """
+
     # For now I recompute also lines that should be 'skipped' (e.g. if the band has Y|A, I also compute the
     # Y-A segment). Currently the point is skipped (I could do it) but the phonon visualizer will still display
     # a line (with straight segments) of the length of the Y-A segment, with no selectable points, that is worse
@@ -168,113 +115,276 @@ def get_files_from_materials_cloud(
     matdyn_input_file += f"{len(new_matdyn_lines)}\n"
     matdyn_input_file += "\n".join(new_matdyn_lines)
     matdyn_input_file += "\n"
+    return matdyn_input_file, final_high_sym_kpts
 
-    # Retrieve PW inputs and outputs
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        force_constants_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    q2r_uuid = inputs[0]["uuid"]  # There is a single creator
 
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        q2r_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    inputs_dict = {inp["link_label"]: inp["uuid"] for inp in inputs}
-    remote_data_uuid = inputs_dict["parent_calc_folder"]
+def needs_node(f):
+    """Decorator for methods to validate early that a node is loaded."""
 
-    ##
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        remote_data_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    calcf_uuid = inputs[0]["uuid"]  # There is a single creator
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        """Print an error and return if there is no node loaded."""
+        if not self.current_uuid:
+            raise ValueError("A node must be loaded first with `load_node`")
+        return f(self, *args, **kwargs)
 
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        calcf_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    inputs_dict = {inp["link_label"]: inp["uuid"] for inp in inputs}
-    # print(compound, inputs_dict.keys())
+    return wrapper
+
+
+class AiiDARestResponse:
+    def __init__(self, raw_response: bytes):
+        """Get the raw bytes from the response, parses them and offers them in an intuitive way."""
+        self._raw_data: Dict = json.loads(raw_response)
+
+    @property
+    def raw_data(self) -> Dict:
+        return self._raw_data
+
+    @property
+    def data(self) -> Dict:
+        return self.raw_data["data"]
+
+    @property
+    def path(self) -> str:
+        return self.raw_data["path"]
+
+    @property
+    def resource_type(self) -> str:
+        return self.raw_data["resource_type"]
+
+    @property
+    def url(self) -> str:
+        return self.raw_data["url"]
+
+    @property
+    def method(self) -> str:
+        return self.raw_data["method"]
+
+    @property
+    def query_string(self) -> str:
+        return self.raw_data["query_string"]
+
+    @property
+    def url_root(self) -> str:
+        return self.raw_data["url_root"]
+
+
+class NodesAiiDARestResponse(AiiDARestResponse):
+    def __init__(self, raw_response: bytes):
+        super().__init__(raw_response=raw_response)
+        assert "nodes" in self.data
+
+    @property
+    def nodes(self) -> List:
+        return self.data["nodes"]
+
+
+class SingleNodeAiiDARestResponse(NodesAiiDARestResponse):
+    def __init__(self, raw_response: bytes):
+        super().__init__(raw_response=raw_response)
+        if len(self.nodes) == 0:
+            raise ValueError("No nodes found in the response")
+        if len(self.nodes) > 1:
+            raise ValueError("More than one node returned in the response")
+
+    @property
+    def node(self) -> Dict:
+        return self.nodes[0]
+
+
+class AiiDARestClient:
+    def __init__(self, endpoint: str):
+        """
+        Creates the REST client.
+
+        The endpoint should be something like:
+
+            https://aiida.materialscloud.org/2dstructures/api/v4
+        """
+        # endpoint without final slash (if present)
+        self._endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
+        self._current_uuid: Optional[str] = None
+
+    def _make_request(self, request_url: str) -> bytes:
+        return urllib.request.urlopen(request_url).read()
+
+    @property
+    def current_uuid(self) -> Optional[str]:
+        return self._current_uuid
+
+    @property
+    def endpoint(self) -> str:
+        return self._endpoint
+
+    @property
+    @needs_node
+    def node_url(self) -> str:
+        return f"{self.endpoint}/nodes/{self.current_uuid}"
+
+    def load_node(self, uuid: str) -> None:
+        self._current_uuid = uuid
+
+    def unload_node(self) -> None:
+        self._current_uuid = None
+
+    @needs_node
+    def get_node_metadata(self):
+        return SingleNodeAiiDARestResponse(self._make_request(self.node_url))
+
+    @needs_node
+    def get_node_repo_content(self, filename) -> bytes:
+        url = f"{self.node_url}/repo/contents?filename=%22{urllib.parse.quote(filename)}%22"
+        return self._make_request(url)
+
+    @needs_node
+    def get_node_repo_list(self) -> List:
+        url = f"{self.node_url}/repo/list"
+        return AiiDARestResponse(self._make_request(url)).data["repo_list"]
+
+    @needs_node
+    def get_attributes(self) -> Dict:
+        url = f"{self.node_url}?attributes=true"
+        response = SingleNodeAiiDARestResponse(self._make_request(url))
+        return response.node["attributes"]
+
+    @needs_node
+    def get_incoming(self) -> List:
+        url = f"{self.node_url}/links/incoming"
+        response = AiiDARestResponse(self._make_request(url))
+        return response.data["incoming"]
+
+    @needs_node
+    def get_incoming_dict(self) -> Dict:
+        incoming = self.get_incoming()
+        incoming_dict = {inc["link_label"]: inc for inc in incoming}
+        if len(incoming) != len(incoming_dict):
+            raise ValueError(
+                "More than one incoming link with the same label. You need to use this method only if you know that the incoming labels are unique"
+            )
+        return incoming_dict
+
+    @needs_node
+    def get_outgoing(self) -> List:
+        url = f"{self.node_url}/links/outgoing"
+        response = AiiDARestResponse(self._make_request(url))
+        return response.data["outgoing"]
+
+    @needs_node
+    def get_outgoing_dict(self) -> Dict:
+        outgoing = self.get_outgoing()
+        outgoing_dict = {out["link_label"]: out for out in outgoing}
+        if len(outgoing) != len(outgoing_dict):
+            raise ValueError(
+                "More than one outgoing link with the same label. You need "
+                "to use this method only if you know that the outgoing labels "
+                "are unique, e.g. for AiiDA processes"
+            )
+        return outgoing_dict
+
+
+def get_files_from_materials_cloud(
+    discover_data, compound
+):  # pylint: disable=too-many-locals, too-many-statements
+    """Given a compound name, return the content of some relevant files (as a dictionary)."""
+    compounds = discover_data["data"]["compounds"]
+    material = compounds[compound]
     try:
-        remote_data_uuid = inputs_dict[
-            "retrieved_1"
+        phonons_uuid = material["phonons_2D"]
+    except KeyError:
+        raise MissingPhononsError(f"No phonons for {compound}")
+
+    # Create REST client, check that I am pointing to a BandsData
+    client = AiiDARestClient(
+        endpoint="https://aiida.materialscloud.org/2dstructures/api/v4/"
+    )
+    client.load_node(phonons_uuid)
+    assert (
+        client.get_node_metadata().node["full_type"] == "data.array.bands.BandsData.|"
+    )
+
+    # Retrieve k-point coordinates and labels
+    bands_kpts_array = np.load(io.BytesIO(client.get_node_repo_content("kpoints.npy")))
+    attributes = client.get_attributes()
+    high_symmetry_points = list(zip(attributes["label_numbers"], attributes["labels"]))
+    # [((0, u'G'), array([ 0.,  0.,  0.])), ((49, u'M'), array([ 0.5,  0. ,  0. ])),
+    #  ((85, u'K'), array([ 0.33333333,  0.33333333,  0.        ])), ((131, u'G'), array([ 0.,  0.,  0.]))]
+    high_symmetry_points_coordinates = [
+        bands_kpts_array[sym_kpt[0]] for sym_kpt in high_symmetry_points
+    ]
+    # Prepare matdyn input file
+    matdyn_input_file, final_high_sym_kpts = get_matdyn_input_file(
+        high_symmetry_points, high_symmetry_points_coordinates
+    )
+
+    # Retrieve phonon bands input (matdyn.x)
+    client.load_node(
+        client.get_incoming()[0]["uuid"]
+    )  # Move to the creator: it's a single one
+    matdyn_uuid = client.current_uuid
+
+    # Go to the force constants FolderData
+    client.load_node(client.get_incoming_dict()["parent_calc_folder"]["uuid"])
+    force_constants_uuid = client.current_uuid
+    real_force_constants = client.get_node_repo_content(
+        "real_space_force_constants.dat"
+    )
+
+    ## Retrieve PW inputs and outputs
+    # First go to the q2r calculation
+    client.load_node(
+        client.get_incoming()[0]["uuid"]
+    )  # Move to the creator: it's a single one
+    # Then go to the parent calc folder (RemoteData)
+    client.load_node(client.get_incoming_dict()["parent_calc_folder"]["uuid"])
+    # Now get the calculation itself - it's a calcfunction
+    client.load_node(
+        client.get_incoming()[0]["uuid"]
+    )  # Move to the creator: it's a single one
+    assert (
+        client.get_node_metadata().node["node_type"]
+        == "process.calculation.calcfunction.CalcFunctionNode."
+    ), "The parent of the Q2R is not a CalcFunction as I expected!"
+
+    # Go to the correct parent, depending on which link labels there is
+    inputs_dict = client.get_incoming_dict()
+    try:
+        remote_data_uuid = inputs_dict["retrieved_1"][
+            "uuid"
         ]  # Go to the ph.x of the first q-point
     except KeyError:
         # Some materials follow a different path via a different calcfunction, but
         # the parent of it is still a ph.x so I can just switch which input to follow
-        remote_data_uuid = inputs_dict["ph_folder_with_eps"]
+        remote_data_uuid = inputs_dict["ph_folder_with_eps"]["uuid"]
+    client.load_node(remote_data_uuid)
 
-    ##
-    api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-        remote_data_uuid
-    )
-    inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-        "incoming"
-    ]
-    ph_uuid = inputs[0]["uuid"]  # There is a single creator
+    # Now get the parent - it might still be a phonon calculation
+    client.load_node(
+        client.get_incoming()[0]["uuid"]
+    )  # Move to the creator: it's a single one
 
+    # There might be multiple restarts - I iterate until I find a pw
     is_still_ph = True
     while is_still_ph:
-        api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-            ph_uuid
-        )
-        inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-            "incoming"
-        ]
-        inputs_dict = {inp["link_label"]: inp["uuid"] for inp in inputs}
-        remote_data_uuid = inputs_dict["parent_calc_folder"]
+        # I go up to the RemoteData and then to the creator
+        client.load_node(client.get_incoming_dict()["parent_calc_folder"]["uuid"])
+        client.load_node(
+            client.get_incoming()[0]["uuid"]
+        )  # Move to the creator: it's a single one
 
-        ##
-        api_inputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/incoming".format(
-            remote_data_uuid
-        )
-        inputs = json.loads(urllib.request.urlopen(api_inputs_url).read())["data"][
-            "incoming"
-        ]
-        scf_pw_uuid = inputs[0]["uuid"]  # There is a single creator
-
-        ## We finally got to the SCF!!
-        ## Let's now extract the data.
-
-        api_content_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/repo/contents?filename=%22aiida.in%22".format(
-            scf_pw_uuid
-        )
-        scf_input_file = urllib.request.urlopen(api_content_url).read()
-
-        if b"&inputph" in scf_input_file.lower():
-            # This is still a PH.x calcualtion - probably there were multiple restarts
-            # I mark this as such (and not a SCF pw) and iterate once more in the while loop
-            ph_uuid = scf_pw_uuid
-        else:
+        scf_pw_uuid = client.current_uuid
+        scf_input_file = client.get_node_repo_content("aiida.in")
+        if b"&inputph" not in scf_input_file.lower():
             # I found a non-ph calculation (should be hopefully a PW). I go out of the loop.
             is_still_ph = False
 
-    assert (
-        b"calculation = 'scf'" in scf_input_file
-    ), f"The parent calculation does not seem to be a SCF for '{compound}', UUID={scf_pw_uuid}"
+    if b"calculation = 'scf'" not in scf_input_file:
+        raise ValueError(
+            f"The parent calculation does not seem to be a SCF for '{compound}', UUID={client.current_uuid}"
+        )
 
-    api_outputs_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/links/outgoing".format(
-        scf_pw_uuid
-    )
-    outputs = json.loads(urllib.request.urlopen(api_outputs_url).read())["data"][
-        "outgoing"
-    ]
-    outputs_dict = {out["link_label"]: out["uuid"] for out in outputs}
-    folder_data_uuid = outputs_dict["retrieved"]
-
-    api_content_url = "https://aiida.materialscloud.org/2dstructures/api/v4/nodes/{}/repo/contents?filename=%22aiida.out%22".format(
-        folder_data_uuid
-    )
-    scf_output_file = urllib.request.urlopen(api_content_url).read()
+    # Go to the retrieved SCF outputs
+    client.load_node(client.get_outgoing_dict()["retrieved"]["uuid"])
+    scf_output_file = client.get_node_repo_content("aiida.out")
 
     return {
         "files": {
@@ -385,8 +495,6 @@ if __name__ == "__main__":
                 prototype=discover_data["data"]["compounds"][compound]["prototype"],
             ),
         )
-
-        # print(phonons)
 
         json_fname = os.path.realpath(
             os.path.join(dest_folder, os.pardir, "{}.json".format(compound))
