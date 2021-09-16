@@ -52,3 +52,6 @@ data:
   BaTiO_3:
     title: "BaTiO<sub>3</sub>"
     filename: BaTiO_3.json
+  AgNO2:
+    title: "AgNO<sub>2</sub>"
+    filename: AgNO2.json
