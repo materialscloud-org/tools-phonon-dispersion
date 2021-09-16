@@ -1,12 +1,12 @@
 &INPUT
-  asr = 'simple'
-  loto_2d = .true.
-  fldos = ''
-  flfrc = 'real_space_force_constants.dat'
-  flfrq = ''
-  flvec = 'matdyn.modes'
-  q_in_cryst_coord = .true.
-  q_in_band_form = .true.
+asr = 'simple'
+loto_2d = .true.
+fldos = ''
+flfrc = 'real_space_force_constants.dat'
+flfrq = ''
+flvec = 'matdyn.modes'
+q_in_cryst_coord = .true.
+q_in_band_form = .true.
 /
 4
       0.0000000000       0.0000000000       0.0000000000 20
