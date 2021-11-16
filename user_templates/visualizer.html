@@ -27,6 +27,9 @@
 
 </head>
 <body>
+
+{% include "header.html" %}
+
 <script>
     var jsondata = JSON.parse('{{ jsondata | tojson | safe }}');
     var enableStrInteraction = false;
