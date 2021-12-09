@@ -19,7 +19,7 @@ from tools_barebone import __version__ as tools_barebone_version
 
 import header
 
-__version__ = "21.11.0"
+__version__ = "21.12.0"
 
 blueprint = Blueprint("compute", __name__, url_prefix="/compute")
 
