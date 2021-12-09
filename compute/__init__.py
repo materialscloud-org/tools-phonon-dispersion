@@ -17,7 +17,9 @@ except Exception:
 import qe_tools  # mostly to get its version
 from tools_barebone import __version__ as tools_barebone_version
 
-__version__ = "21.10.0"
+import header
+
+__version__ = "21.12.0"
 
 blueprint = Blueprint("compute", __name__, url_prefix="/compute")
 
@@ -78,6 +80,8 @@ def process_structure():
 
         file_format = flask.request.form.get("file_format")
 
+        tvars = header.template_vars
+
         # CASE 1: check if custom json file is uploaded
         if file_format == "custom_json_file":
             filename = custom_json_file.filename
@@ -101,12 +105,14 @@ def process_structure():
                             "vectors",
                         ]
                     ), "The JSON file does not have some of the required keys"
+                    config["output_title"] = Markup(jsondata.get("name", filename))
                     return flask.render_template(
-                        "user_templates/visualizer.html",
+                        "user_templates/visualizer_header.html",
                         structure=jsondata.get("name", filename),
-                        page_title=Markup(jsondata.get("name", filename)),
+                        config=config,
                         jsondata=jsondata,
-                        **get_version_info()
+                        **get_version_info(),
+                        **tvars,
                     )
                 except (ValueError, AssertionError) as exc:
                     flask.flash(
@@ -132,7 +138,7 @@ def process_structure():
                 flask.flash("You didn't specify a QE matdyn.modes file")
                 return flask.redirect(flask.url_for("input_data"))
 
-            page_title = "{} + {} + {}".format(
+            config["output_title"] = "{} + {} + {}".format(
                 qe_input_file.filename, qe_output_file.filename, qe_modes_file.filename
             )
 
@@ -143,10 +149,11 @@ def process_structure():
                 ).get_dict()
                 if jsondata:
                     return flask.render_template(
-                        "user_templates/visualizer.html",
-                        page_title=page_title,
+                        "user_templates/visualizer_header.html",
+                        config=config,
                         jsondata=jsondata,
-                        **get_version_info()
+                        **get_version_info(),
+                        **tvars,
                     )
                 flask.flash(
                     "Error in processing uploaded Quantum ESPRESSO input files, no data parsed."
@@ -170,9 +177,12 @@ def process_structure_example():
         example_structure = flask.request.form.get(
             "example_structure", "No structure selected"
         )
+        tvars = header.template_vars
         try:
             if config:
-                page_title = config["data"][example_structure]["title"]
+                config["output_title"] = Markup(
+                    config["data"][example_structure]["title"]
+                )
                 if data_folder:
                     filename = config["data"][example_structure]["filename"]
                     filepath = os.path.join(directory, data_folder, filename)
@@ -181,10 +191,11 @@ def process_structure_example():
                         jsondata = json.load(structurefile)
 
                     return flask.render_template(
-                        "user_templates/visualizer.html",
-                        page_title=Markup(page_title),
+                        "user_templates/visualizer_header.html",
                         jsondata=jsondata,
-                        **get_version_info()
+                        config=config,
+                        **get_version_info(),
+                        **tvars,
                     )
                 raise FlaskRedirectException(
                     "data_folder path is missing in config file."
