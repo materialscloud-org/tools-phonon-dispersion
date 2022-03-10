@@ -4,7 +4,7 @@ tools-phonon-dispersion
 
 In this repository we provide the code to deploy an online service for
 the interactive visualization of the phonon modes.
-A live demo is currently hosted on the `Materials Cloud`_ web portal.
+A `live demo`_ is currently hosted on the `Materials Cloud`_ web portal.
 
 This tool leverages the `phonon visualizer`_ developed by Henrique Miranda.
 
@@ -59,3 +59,4 @@ and then connect to ``http://localhost:8093`` with your browser.
 .. _Materials Cloud: https://www.materialscloud.org/work/tools/interactivephonon
 .. _phonon visualizer: http://henriquemiranda.github.io/phononwebsite/
 .. _DockerHub under the repository materialscloud/tools-phonon-dispersion: https://hub.docker.com/repository/docker/materialscloud/tools-phonon-dispersion
+.. _live demo: https://interactivephonon.materialscloud.io/
