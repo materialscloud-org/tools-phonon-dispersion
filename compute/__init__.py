@@ -17,7 +17,13 @@ except Exception:
 import qe_tools  # mostly to get its version
 from tools_barebone import __version__ as tools_barebone_version
 
-import header
+# Without the try/except, this fails for convert-to-json.py
+try:
+    import header
+except Exception:
+    import traceback
+    traceback.print_exc()
+    print("Continuing without Materials Cloud header.")
 
 __version__ = "21.12.0"
 
