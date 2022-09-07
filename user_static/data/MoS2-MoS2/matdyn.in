@@ -1,9 +1,10 @@
 &INPUT
-asr = 'simple'
+asr = 'all'
+read_lr = .true.
 loto_2d = .true.
 fldos = ''
 flfrc = 'real_space_force_constants.dat'
-flfrq = ''
+flfrq = 'matdyn.frq'
 flvec = 'matdyn.modes'
 q_in_cryst_coord = .true.
 q_in_band_form = .true.
