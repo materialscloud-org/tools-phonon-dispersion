@@ -22,6 +22,7 @@ try:
     import header
 except Exception:
     import traceback
+
     traceback.print_exc()
     print("Continuing without Materials Cloud header.")
 
