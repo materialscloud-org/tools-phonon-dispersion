@@ -24,20 +24,21 @@ with open(os.path.join(folder_name, "matdyn.modes")) as fhandle:
 
 pretty_name_dict = {"BaTiO_3": "BaTiO<sub>3</sub>"}
 
+highsym_qpts_default = [[0, "Γ"], [20, "M"], [40, "K"], [60, "Γ"]]
 highsym_qpts_dict = {
-    "graphene": [[0, "Γ"], [20, "M"], [30, "K"], [50, "Γ"]],
     "BaTiO_3": [[0, "X"], [20, "Γ"], [40, "M"], [60, "Γ"], [100, "R"]],
 }
 
-starting_reps_dict = {"graphene": (5, 5, 1), "BaTiO_3": (3, 3, 3)}
+starting_reps_default = (5, 5, 1)
+starting_reps_dict = {"BaTiO_3": (3, 3, 3)}
 
 
 phonons = QePhononQetools(
     scf_input=scf_input,
     scf_output=scf_output,
     matdyn_modes=matdyn_modes,
-    highsym_qpts=highsym_qpts_dict.get(system_name),
-    starting_reps=starting_reps_dict.get(system_name, (3, 3, 3)),
+    highsym_qpts=highsym_qpts_dict.get(system_name, highsym_qpts_default),
+    starting_reps=starting_reps_dict.get(system_name, starting_reps_default),
     reorder=True,
     name=pretty_name_dict.get(system_name, system_name),
 )
