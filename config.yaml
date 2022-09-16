@@ -43,9 +43,6 @@ data:
   MoS2-MoS2:
     title: "MoS<sub>2</sub>"
     filename: MoS2-MoS2.json
-  P:
-    title: "P"
-    filename: P.json
   PbTe:
     title: "PbTe"
     filename: PbTe.json
