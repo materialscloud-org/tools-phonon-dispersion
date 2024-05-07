@@ -1,0 +1,6 @@
+Graphite
+&INPUT
+  fildyn = 'graphite.dyn'
+  zasr = 'crystal'
+  flfrc = 'graphite.fc'
+/

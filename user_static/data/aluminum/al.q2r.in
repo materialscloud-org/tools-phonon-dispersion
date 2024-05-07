@@ -1,0 +1,6 @@
+al
+&INPUT
+  fildyn = 'al.dyn'
+  zasr = 'crystal'
+  flfrc = 'al.fc'
+/

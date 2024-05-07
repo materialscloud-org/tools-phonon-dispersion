@@ -15,22 +15,23 @@ except IndexError:
 
 system_name = os.path.basename(os.path.realpath(folder_name))
 
-with open(os.path.join(folder_name, "scf.in")) as fhandle:
+with open(os.path.join(folder_name, "GaAs.scf.in")) as fhandle:
     scf_input = fhandle.read()
-with open(os.path.join(folder_name, "scf.out")) as fhandle:
+with open(os.path.join(folder_name, "GaAs.scf.out")) as fhandle:
     scf_output = fhandle.read()
-with open(os.path.join(folder_name, "matdyn.modes")) as fhandle:
+with open(os.path.join(folder_name, "GaAs.modes")) as fhandle:
     matdyn_modes = fhandle.read()
 
-pretty_name_dict = {"BaTiO_3": "BaTiO<sub>3</sub>"}
+pretty_name_dict = {"GaAs": "GaAs"}
 
-highsym_qpts_default = [[0, "Γ"], [20, "M"], [40, "K"], [60, "Γ"]]
+highsym_qpts_default = [[0, "L"], [40, "Γ"], [80, "X"], [120, "K"], [160, "Γ"]]
 highsym_qpts_dict = {
-    "BaTiO_3": [[0, "X"], [20, "Γ"], [40, "M"], [60, "Γ"], [100, "R"]],
+    "GaAs": [[0, "L"], [40, "Γ"], [80, "X"], [120, "K"], [160, "Γ"]],
 }
 
-starting_reps_default = (5, 5, 1)
-starting_reps_dict = {"BaTiO_3": (3, 3, 3)}
+# supercell
+starting_reps_default = (3,3,3)
+starting_reps_dict = {"GaAs": (3, 3, 3)}
 
 
 phonons = QePhononQetools(

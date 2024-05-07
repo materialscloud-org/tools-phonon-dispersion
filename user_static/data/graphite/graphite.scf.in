@@ -1,0 +1,32 @@
+&control
+   calculation = 'scf'
+   restart_mode='from_scratch',
+   prefix='graphite'
+   pseudo_dir ='/home/bonacc_m/Codes/q-e/pseudo'
+   outdir='/home/bonacc_m/Documents/phonons/example16/TMP_graphite'
+/
+
+&system
+    ibrav           = 4 
+    celldm(1)       = 4.64630333
+    celldm(3)       = 2.58254285
+    nat             = 4 
+    ntyp            = 1
+    ecutwfc         = 30.0
+    ecutrho         = 180.0
+/
+
+&electrons
+    conv_thr        = 1.0d-12
+/
+ATOMIC_SPECIES
+C   12.00   C.pbe-rrkjus.UPF
+
+ATOMIC_POSITIONS (CRYSTAL)
+C        0.000000000   0.000000000   0.000000000
+C        0.333333333   0.666666667   0.000000000
+C        0.000000000   0.000000000   0.500000000
+C        0.666666667   0.333333333   0.500000000
+
+K_POINTS automatic
+8 8 4 1 1 1

@@ -1,0 +1,25 @@
+ &control
+    calculation='scf',
+    restart_mode='from_scratch',
+    prefix='diamond',
+    pseudo_dir ='.'
+    outdir='/home/bonacc_m/Documents/phonons/diamond/TMP_diamond'
+ /
+ &system
+    ibrav = 2, 
+    celldm(1) = 6.6, 
+    nat=  2, 
+    ntyp= 1,
+    ecutwfc = 110.0
+ /
+ &electrons
+    mixing_beta = 0.7
+    conv_thr =  1.0d-9
+ /
+ATOMIC_SPECIES
+ C   12.011  C.pz-vbc.UPF
+ATOMIC_POSITIONS (alat)
+ C  0.00 0.00 0.00
+ C  0.25 0.25 0.25
+K_POINTS AUTOMATIC
+8 8 8 1 1 1 

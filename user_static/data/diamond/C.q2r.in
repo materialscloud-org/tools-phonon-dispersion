@@ -1,0 +1,6 @@
+diamond
+&INPUT
+  fildyn = 'diamond.dyn'
+  zasr = 'crystal'
+  flfrc = 'diamond.fc'
+/
