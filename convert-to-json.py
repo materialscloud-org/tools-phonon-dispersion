@@ -24,12 +24,12 @@ with open(os.path.join(folder_name, "GaAs.modes")) as fhandle:
 
 pretty_name_dict = {"GaAs": "GaAs"}
 
-highsym_qpts_default = [[0, "L"], [40, "Γ"], [80, "X"], [120, "K"], [160, "Γ"]]
+highsym_qpts_default = [[0, "L"], [40, "Γ"], [80, "K"], [100, "X"], [140, "Γ"]]
 highsym_qpts_dict = {
-    "GaAs": [[0, "L"], [40, "Γ"], [80, "X"], [120, "K"], [160, "Γ"]],
+    "GaAs": [[0, "L"], [40, "Γ"], [80, "K"], [100, "X"], [140, "Γ"]],
 }
 
-# supercell
+#supercell.
 starting_reps_default = (3,3,3)
 starting_reps_dict = {"GaAs": (3, 3, 3)}
 
