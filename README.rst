@@ -17,6 +17,7 @@ Contributors
 - Henrique Miranda (UCL, Belgium) [development of the original phonon visualizer]
 - Thibault Sohier (EPFL) [support on the python code and on the examples]
 - Chara Cignarella (EPFL) [bug reporting and fixing]
+- Miki Bonacci (PSI) [support on the examples]
 
 =======
 License
