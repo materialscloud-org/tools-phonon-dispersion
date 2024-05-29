@@ -15,25 +15,33 @@ except IndexError:
 
 system_name = os.path.basename(os.path.realpath(folder_name))
 
-with open(os.path.join(folder_name, "GaAs.scf.in")) as fhandle:
+with open(os.path.join(folder_name, "scf.in")) as fhandle:
     scf_input = fhandle.read()
-with open(os.path.join(folder_name, "GaAs.scf.out")) as fhandle:
+with open(os.path.join(folder_name, "scf.out")) as fhandle:
     scf_output = fhandle.read()
-with open(os.path.join(folder_name, "GaAs.modes")) as fhandle:
+with open(os.path.join(folder_name, "modes")) as fhandle:
     matdyn_modes = fhandle.read()
 
-pretty_name_dict = {"GaAs": "GaAs"}
+# pretty_name_dict only contains the names which should be rewritten with HTML (subscripts and other effects)
+pretty_name_dict = {
+    "PbI2":"PbI<sub>2</sub>",
+    "MoS2":"MoS<sub>2</sub>",
+    "AgNO2":"AgNO<sub>2</sub>",
+    "BaTiO_3": "BaTiO<sub>3</sub>",
+    }
 
-highsym_qpts_default = [[0, "L"], [40, "Γ"], [80, "K"], [100, "X"], [140, "Γ"]]
+highsym_qpts_default = [[0, "Γ"], [20, "M"], [40, "K"], [60, "Γ"]]
 highsym_qpts_dict = {
-    "GaAs": [[0, "L"], [40, "Γ"], [80, "K"], [100, "X"], [140, "Γ"]],
+    system: [[0, "Γ"], [20, "X"], [40, "U|K"], [60, "Γ"], [80, "L"], [100, "W"], [120, "X"]] for system in ["GaAs", "diamond","Aluminum"]
 }
 
+highsym_qpts_dict["BaTiO_3"] = [[0, "X"], [20, "Γ"], [40, "M"], [60, "Γ"], [100, "R"]],
+
 #supercell.
-starting_reps_default = (3,3,3)
-starting_reps_dict = {"GaAs": (3, 3, 3)}
+starting_reps_default = (5, 5, 1) # for the 2D systems we use this default
+starting_reps_dict = {system: (3,3,3) for system in ["BaTiO_3", "GaAs", "diamond","Aluminum"]}
 
-
+print(system_name)
 phonons = QePhononQetools(
     scf_input=scf_input,
     scf_output=scf_output,
