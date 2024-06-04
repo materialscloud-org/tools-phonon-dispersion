@@ -1,6 +1,6 @@
 al
 &INPUT
-  fildyn = 'al.dyn'
+  fildyn = 'dyn'
   zasr = 'crystal'
-  flfrc = 'al.fc'
+  flfrc = 'fc'
 /

@@ -3,7 +3,7 @@
     restart_mode='from_scratch',
     prefix='GaAs',
     pseudo_dir ='/home/bonacc_m/Downloads/sg15_oncv_upf_2020-02-06'
-    outdir='/home/bonacc_m/Documents/phonons/GaAs_NAC/TMP_GaAs'
+    outdir='/home/bonacc_m/Documents/phonons/GaAs/TMP'
   /
   &system
     ibrav = 2
@@ -29,4 +29,4 @@
     As 0.25 0.25 0.25
 
   K_POINTS AUTOMATIC
-  8 8 8 1 1 1
+   12 12 12 1 1 1

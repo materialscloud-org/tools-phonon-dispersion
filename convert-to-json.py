@@ -32,7 +32,7 @@ pretty_name_dict = {
 
 highsym_qpts_default = [[0, "Γ"], [20, "M"], [40, "K"], [60, "Γ"]]
 highsym_qpts_dict = {
-    system: [[0, "Γ"], [20, "X"], [40, "U|K"], [60, "Γ"], [80, "L"], [100, "W"], [120, "X"]] for system in ["GaAs", "diamond","Aluminum"]
+    system: [[0, "Γ"], [20, "X"], [40, "U|K"], [70, "Γ"], [90, "L"], [110, "W"], [130, "X"]] for system in ["GaAs", "diamond","Aluminum"]
 }
 
 highsym_qpts_dict["BaTiO_3"] = [[0, "X"], [20, "Γ"], [40, "M"], [60, "Γ"], [100, "R"]],

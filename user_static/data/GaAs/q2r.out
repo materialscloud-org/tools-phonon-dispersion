@@ -1,5 +1,5 @@
 
-     Program Q2R v.7.1 starts on  2May2024 at 19:51:38 
+     Program Q2R v.7.1 starts on  4Jun2024 at  0:57:44 
 
      This program is part of the open-source Quantum ESPRESSO suite
      for quantum simulation of materials; please cite
@@ -16,23 +16,23 @@
 
      MPI processes distributed on     1 nodes
      R & G space division:  proc/nbgrp/npool/nimage =      12
-     219767 MiB available memory on the printing compute node when the environment starts
+     238150 MiB available memory on the printing compute node when the environment starts
 
 
      reading grid info from file GaAs.dyn0    
   reading force constants from file GaAs.dyn1
  macroscopic fields = T
-  15.24991  -0.00000  -0.00000
-  -0.00000  15.24991  -0.00000
-  -0.00000  -0.00000  15.24991
+  15.41169   0.00000   0.00000
+   0.00000  15.41169  -0.00000
+   0.00000   0.00000  15.41169
   na=            1
-   2.20458   0.00000   0.00000
-   0.00000   2.20458   0.00000
-   0.00000   0.00000   2.20458
+   2.20323  -0.00000  -0.00000
+  -0.00000   2.20323  -0.00000
+  -0.00000  -0.00000   2.20323
   na=            2
-  -2.21599   0.00000  -0.00000
-   0.00000  -2.21599  -0.00000
-  -0.00000   0.00000  -2.21599
+  -2.20888  -0.00000   0.00000
+   0.00000  -2.20888   0.00000
+   0.00000   0.00000  -2.20888
   nqs=            1
  q=   0.00000000  0.00000000  0.00000000
   reading force constants from file GaAs.dyn2
@@ -120,7 +120,7 @@
      Q2R          :      0.03s CPU      0.03s WALL
 
 
-   This run was terminated on:  19:51:38   2May2024            
+   This run was terminated on:   0:57:44   4Jun2024            
 
 =------------------------------------------------------------------------------=
    JOB DONE.

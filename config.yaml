@@ -59,7 +59,7 @@ data:
     title: "AgNO<sub>2</sub>"
     filename: AgNO2.json
   Al:
-    title: "Aluminunm"
+    title: "Aluminum"
     filename: aluminum.json
   GaAs:
     title: "GaAs"

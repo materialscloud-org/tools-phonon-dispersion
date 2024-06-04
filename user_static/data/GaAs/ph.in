@@ -1,6 +1,6 @@
 GaAs
 &inputph
-  outdir='/home/bonacc_m/Documents/phonons/GaAs_NAC/TMP_GaAs'
+  outdir='/home/bonacc_m/Documents/phonons/GaAs/TMP'
   prefix='GaAs'
   fildyn='GaAs.dyn',
   tr2_ph=1d-13,
