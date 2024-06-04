@@ -1726,7 +1726,7 @@
                     title: { text: 'Frequency (cm<sup>-1</sup>)' },
                     plotLines: [ {value: 0, color: '#000000', width: 2} ]
                 },
-                tooltip: { formatter: function(x) { return Math.round(this.y*100)/100+' cm<sup>-1</sup>' } },
+                tooltip: { enabled: false, formatter: function(x) { return Math.round(this.y*100)/100+' cm<sup>-1</sup>' } },
                 legend: { enabled: false },
                 series: [],
                 plotOptions: { line:   { animation: false },
