@@ -1,0 +1,14 @@
+&INPUT
+  asr = 'crystal'
+  flfrc = 'graphite.fc'
+  flfrq = 'graphite.freq'
+  flvec = 'graphite.modes'
+!  loto_2d = .true.
+  q_in_cryst_coord = .true.
+  q_in_band_form = .true.
+/
+4
+0.000 0.000 0.000  20 ! G
+0.5000000000	0.0000000000	0.0000000000  20 ! M
+0.3333333333	0.3333333333	0.0000000000 20 ! K
+0 0 0 20 ! G

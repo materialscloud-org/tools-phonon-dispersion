@@ -1,0 +1,32 @@
+  &control
+    calculation='scf',
+    restart_mode='from_scratch',
+    prefix='GaAs',
+    pseudo_dir ='/home/bonacc_m/Downloads/sg15_oncv_upf_2020-02-06'
+    outdir='/home/bonacc_m/Documents/phonons/GaAs/TMP'
+  /
+  &system
+    ibrav = 2
+    celldm(1) = 10.861462
+    nat = 2
+    ntyp = 2
+    ecutwfc = 80
+    ecutrho = 640
+  /
+
+  &electrons
+    mixing_mode = 'plain'
+    mixing_beta = 0.7
+    conv_thr = 1.0e-8
+  /
+
+  ATOMIC_SPECIES
+    Ga 69.723    Ga_ONCV_PBE-1.2.upf
+    As 74.921595 As_ONCV_PBE-1.2.upf
+
+  ATOMIC_POSITIONS (alat)
+    Ga 0.00 0.00 0.00
+    As 0.25 0.25 0.25
+
+  K_POINTS AUTOMATIC
+   12 12 12 1 1 1

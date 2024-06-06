@@ -22,17 +22,39 @@ with open(os.path.join(folder_name, "scf.out")) as fhandle:
 with open(os.path.join(folder_name, "matdyn.modes")) as fhandle:
     matdyn_modes = fhandle.read()
 
-pretty_name_dict = {"BaTiO_3": "BaTiO<sub>3</sub>"}
+# pretty_name_dict only contains the names which should be rewritten with HTML (subscripts and other effects)
+pretty_name_dict = {
+    "PbI2": "PbI<sub>2</sub>",
+    "MoS2": "MoS<sub>2</sub>",
+    "AgNO2": "AgNO<sub>2</sub>",
+    "BaTiO_3": "BaTiO<sub>3</sub>",
+}
 
 highsym_qpts_default = [[0, "Γ"], [20, "M"], [40, "K"], [60, "Γ"]]
 highsym_qpts_dict = {
-    "BaTiO_3": [[0, "X"], [20, "Γ"], [40, "M"], [60, "Γ"], [100, "R"]],
+    system: [
+        [0, "Γ"],
+        [20, "X"],
+        [40, "U|K"],
+        [70, "Γ"],
+        [90, "L"],
+        [110, "W"],
+        [130, "X"],
+    ]
+    for system in ["GaAs", "diamond", "Aluminum"]
 }
 
-starting_reps_default = (5, 5, 1)
-starting_reps_dict = {"BaTiO_3": (3, 3, 3)}
+highsym_qpts_dict["BaTiO_3"] = (
+    [[0, "X"], [20, "Γ"], [40, "M"], [60, "Γ"], [100, "R"]],
+)
 
+# supercell.
+starting_reps_default = (5, 5, 1)  # for the 2D systems we use this default
+starting_reps_dict = {
+    system: (3, 3, 3) for system in ["BaTiO_3", "GaAs", "diamond", "Aluminum"]
+}
 
+print(system_name)
 phonons = QePhononQetools(
     scf_input=scf_input,
     scf_output=scf_output,

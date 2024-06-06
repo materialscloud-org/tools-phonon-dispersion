@@ -1,0 +1,17 @@
+GaAs
+&inputph
+  outdir='/home/bonacc_m/Documents/phonons/GaAs/TMP'
+  prefix='GaAs'
+  fildyn='GaAs.dyn',
+  tr2_ph=1d-13,
+  epsil=.true.,
+  asr=.true., 
+  !lraman=.true.,
+  !elop=.true.,
+  !zeu=.true.,
+  !zue=.true.,
+  ldisp=.true.
+  nq1=4
+  nq2=4
+  nq3=4
+/

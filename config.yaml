@@ -37,6 +37,12 @@ data:
   C:
     title: "Graphene"
     filename: C.json
+  C4:
+    title: "Graphite"
+    filename: graphite.json
+  C2:
+    title: "Diamond"
+    filename: diamond.json
   PbI2:
     title: "PbI<sub>2</sub>"
     filename: PbI2.json
@@ -52,3 +58,9 @@ data:
   AgNO2:
     title: "AgNO<sub>2</sub>"
     filename: AgNO2.json
+  Al:
+    title: "Aluminum"
+    filename: aluminum.json
+  GaAs:
+    title: "GaAs"
+    filename: GaAs.json

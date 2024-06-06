@@ -1,0 +1,13 @@
+diamond
+&inputph
+  outdir='/home/bonacc_m/Documents/phonons/diamond/TMP_diamond'
+  prefix='diamond'
+  fildyn='diamond.dyn',
+  tr2_ph=1d-14,
+  epsil=.true.
+  ldisp=.true.
+  asr=.true.
+  nq1=4
+  nq2=4
+  nq3=4
+/
