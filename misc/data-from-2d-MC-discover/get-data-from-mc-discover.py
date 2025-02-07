@@ -9,7 +9,7 @@ import urllib
 import urllib.parse
 import urllib.request
 
-from typing import Optional, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from tqdm import tqdm
@@ -224,13 +224,13 @@ class AiiDARestClient:
         """
         # endpoint without final slash (if present)
         self._endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
-        self._current_uuid: Optional[str] = None
+        self._current_uuid: str | None = None
 
     def _make_request(self, request_url: str) -> bytes:
         return urllib.request.urlopen(request_url).read()
 
     @property
-    def current_uuid(self) -> Optional[str]:
+    def current_uuid(self) -> str | None:
         return self._current_uuid
 
     @property
