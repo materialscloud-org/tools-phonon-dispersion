@@ -26,7 +26,7 @@ except Exception:
     traceback.print_exc()
     print("Continuing without Materials Cloud header.")
 
-__version__ = "25.02.0"
+__version__ = "25.02.1"
 
 blueprint = Blueprint("compute", __name__, url_prefix="/compute")
 
